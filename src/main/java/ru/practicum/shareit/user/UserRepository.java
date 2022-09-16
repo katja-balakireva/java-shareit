@@ -32,19 +32,19 @@ public class UserRepository {
     }
 
     public List<User> getAll() {
-       return users.stream()
-               .collect(Collectors.toList());
+        return users.stream()
+                .collect(Collectors.toList());
     }
 
     public User updateUser(Long userId, User user) {
-       User userToUpdate = getById(userId);
+        User userToUpdate = getById(userId);
         if (user.getName() != null) {
             userToUpdate.setName(user.getName());
         }
         if (user.getEmail() != null) {
             userToUpdate.setEmail(user.getEmail());
         }
-       return userToUpdate;
+        return userToUpdate;
     }
 
     public void deleteUser(Long userId) {

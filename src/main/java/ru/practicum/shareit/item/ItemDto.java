@@ -17,10 +17,10 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class ItemDto {
     private Long id;
-    @NotBlank(groups = {Create.class})
+    @NotBlank(message = "Имя не может быть пустым", groups = {Create.class})
     private String name;
-    @NotBlank(groups = {Create.class})
+    @NotBlank(message = "Описание не может быть пустым", groups = {Create.class})
     private String description;
-    @NotNull(groups = {Create.class})
+    @NotNull(message = "Не задано значение доступности", groups = {Create.class})
     private Boolean available;
 }

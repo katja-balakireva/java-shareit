@@ -16,10 +16,12 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Item {
-    @Builder.Default private Long id = 0L;
+    @Builder.Default
+    private Long id = 0L;
     private String name;
     private String description;
     private Boolean available;
     private User owner;
-    @Builder.Default private Optional<ItemRequest> request = Optional.empty();
+    @Builder.Default
+    private Optional<ItemRequest> request = Optional.empty();
 }

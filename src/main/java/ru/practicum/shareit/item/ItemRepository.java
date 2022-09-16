@@ -28,7 +28,7 @@ public class ItemRepository {
     }
 
     public Item getById(Long itemId) {
-       return items.stream()
+        return items.stream()
                 .filter(item -> itemId.equals(item.getId()))
                 .findAny().orElse(null);
     }

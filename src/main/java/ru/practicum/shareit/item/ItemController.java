@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.Create;
 import ru.practicum.shareit.Update;
-import ru.practicum.shareit.user.UserService;
 
 import java.util.List;
 
@@ -25,7 +25,8 @@ public class ItemController {
     private final ItemService itemService;
 
     @Autowired
-    public ItemController(ItemService itemService) {
+    public ItemController(@Qualifier("DefaultItemService")
+                          ItemService itemService) {
         this.itemService = itemService;
     }
 
@@ -43,14 +44,14 @@ public class ItemController {
 
     @PostMapping
     public ItemDto addItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                       @Validated({Create.class}) @RequestBody ItemDto itemDto) {
+                           @Validated({Create.class}) @RequestBody ItemDto itemDto) {
         return itemService.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-            @PathVariable Long itemId,
-            @Validated({Update.class}) @RequestBody ItemDto itemDto) {
+                              @PathVariable Long itemId,
+                              @Validated({Update.class}) @RequestBody ItemDto itemDto) {
         return itemService.updateItem(userId, itemId, itemDto);
     }
 
@@ -61,7 +62,8 @@ public class ItemController {
 
     //items/search?text={text}
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId, @RequestParam String text) {
+    public List<ItemDto> searchItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
+                                    @RequestParam String text) {
         return itemService.searchItem(text);
     }
 }

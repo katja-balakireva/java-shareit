@@ -10,13 +10,17 @@ import ru.practicum.shareit.item.ItemDto;
 public class UserMapper {
 
     public static UserDto toUserDto(User user) {
-        return new UserDto(
-                user.getId(),
-                user.getName(),
-                user.getEmail()
-        );
+        return UserDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .build();
     }
-    public static User toUser(UserDto userDto, Long userId) {
-        return new User(userId, userDto.getName(), userDto.getEmail());
+    public static User toUser(UserDto userDto) {
+        return User.builder()
+                .id(userDto.getId())
+                .name(userDto.getName())
+                .email(userDto.getEmail())
+                .build();
     }
 }

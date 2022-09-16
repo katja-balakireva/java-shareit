@@ -1,16 +1,15 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.practicum.shareit.exceptions.DuplicateEmailException;
 import ru.practicum.shareit.exceptions.EmailValidationException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemMapper;
 
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -22,45 +21,48 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> getAll() {
-        return userRepository.getAll();
+    public List<UserDto> getAll() {
+        return userRepository.getAll().stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
-    public User getById(Long userId) {
-        User result = userRepository.getById(userId);
-        if (result == null) {
+    public UserDto getById(Long userId) {
+        User user = userRepository.getById(userId);
+        if (user == null) {
             throw new UserNotFoundException("Пользователь не найден");
-        } else return result;
+        } else return UserMapper.toUserDto(user);
     }
 
-    public User addUser(User user) {
+    public UserDto addUser(UserDto userDto) {
+        User user = UserMapper.toUser(userDto);
         if (user.getEmail() == null || !user.getEmail().contains("@")) {
             throw new EmailValidationException("Неверный или отсутствующий email");
         }
-        for (User u : getAll()) {
+        for (User u : userRepository.getAll()) {
             if (u.getEmail().equals(user.getEmail())) {
                 throw new DuplicateEmailException("Пользователь с таким email уже существует");
             }
         }
-        userRepository.addUser(user);
-        return user;
+        User userToAdd = userRepository.addUser(user);
+        return UserMapper.toUserDto(userToAdd);
     }
 
-    public User updateUser(Long userId, User user) {
-        User result = userRepository.getById(userId);
+    public UserDto updateUser(Long userId, UserDto userDto) {
 
-        for (User u : getAll()) {
+        User user = UserMapper.toUser(userDto);
+
+        for (User u : userRepository.getAll()) {
             if (u.getEmail().equals(user.getEmail())) {
                 throw new DuplicateEmailException("Пользователь с таким email уже существует");
             }
         }
-
-        if (result == null) {
+        if (userRepository.getById(userId) == null) {
             throw new UserNotFoundException("Пользователь не найден");
         } else {
-            userRepository.updateUser(userId, user);
+           User userToUpdate = userRepository.updateUser(userId, user);
+           return UserMapper.toUserDto(userToUpdate);
         }
-        return userRepository.getById(userId);
     }
 
     public void deleteUser(Long userId) {

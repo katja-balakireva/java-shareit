@@ -2,57 +2,53 @@ package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
 public class UserRepository {
 
-    private Map<Long, User> userMap;
+    private Set<User> users;
     private Long idCounter;
 
     public UserRepository() {
-        this.userMap = new HashMap<>();
+        this.users = new LinkedHashSet<>();
         this.idCounter = 0L;
     }
 
-    List<User> getAll() {
-       return userMap.values().stream()
-             //  .map(UserMapper::toUserDto)
-               .collect(Collectors.toList());
+    public User addUser(User user) {
+        Long userId = ++idCounter;
+        user.setId(userId);
+        users.add(user);
+        return getById(userId);
     }
 
-    User getById(Long userId) {
-      return userMap.entrySet().stream()
-                .filter(user -> userId.equals(user.getKey()))
-                .map(Map.Entry::getValue)
-              //  .map(UserMapper::toUserDto)
+    public User getById(Long userId) {
+        return users.stream()
+                .filter(user -> userId.equals(user.getId()))
                 .findAny().orElse(null);
     }
 
-    User addUser(User user) {
-        Long id = ++idCounter;
-        user.setId(id);
-       // User user = UserMapper.toUser(userDto, id);
-        userMap.put(id, user);
-        return userMap.get(id);
+    public List<User> getAll() {
+       return users.stream()
+               .collect(Collectors.toList());
     }
 
-    User updateUser(Long userId, User user) {
-       User userToUpdate = userMap.get(userId);
+    public User updateUser(Long userId, User user) {
+       User userToUpdate = getById(userId);
         if (user.getName() != null) {
             userToUpdate.setName(user.getName());
         }
         if (user.getEmail() != null) {
             userToUpdate.setEmail(user.getEmail());
         }
-       return userMap.get(userId);
+       return userToUpdate;
     }
 
-    void deleteUser(Long userId) {
-        userMap.remove(userId);
+    public void deleteUser(Long userId) {
+        User userToDelete = getById(userId);
+        users.remove(userToDelete);
     }
-    ///test commit
 }

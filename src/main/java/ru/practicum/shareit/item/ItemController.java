@@ -34,9 +34,7 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        if (userId != null) {
-            return itemService.getAllByUser(userId);
-        } else return itemService.getAll();
+        return itemService.getAll(userId);
     }
 
     @GetMapping("/{itemId}")

@@ -1,48 +1,52 @@
 package ru.practicum.shareit.exceptions;
 
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {UserNotFoundException.class})
-    public ResponseEntity<Object> handleNotFound(RuntimeException ex, WebRequest request) {
-        String message = "Пользователь не найден";
-        return handleExceptionInternal(ex, message,
-                new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserNotFound(UserNotFoundException e) {
+        return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(value = {EmailValidationException.class})
-    public ResponseEntity<Object> handleEmailValidation(RuntimeException ex, WebRequest request) {
-        String message = "Валидация email не пройдена";
-        return handleExceptionInternal(ex, message,
-                new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleItemNotFound(ItemNotFoundException e) {
+        return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(value = {DuplicateEmailException.class})
-    public ResponseEntity<Object> handleDuplicateEmail(RuntimeException ex, WebRequest request) {
-        String message = "Пользователь с таким email уже существует";
-        return handleExceptionInternal(ex, message,
-                new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleEmailValidation(EmailValidationException e) {
+        return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(value = {ValidateOwnershipException.class})
-    public ResponseEntity<Object> handleOwnershipException(RuntimeException ex, WebRequest request) {
-        String message = "Нет доступа к изменению объекта";
-        return handleExceptionInternal(ex, message,
-                new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleDuplicateEmail(DuplicateEmailException e) {
+        return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(value = {ControllerException.class})
-    public ResponseEntity<Object> handleControllerException(Exception ex, WebRequest request) {
-        String message = "Поле класса не прошло валидацию";
-        return handleExceptionInternal(ex, message,
-                new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleValidateOwnership(ValidateOwnershipException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleControllerException(ControllerException e) {
+        return new ErrorResponse(e.getMessage());
     }
 }
+

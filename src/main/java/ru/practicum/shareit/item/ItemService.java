@@ -4,9 +4,7 @@ import java.util.List;
 
 public interface ItemService {
 
-    List<ItemDto> getAll();
-
-    List<ItemDto> getAllByUser(Long userId);
+    List<ItemDto> getAll(Long userId);
 
     ItemDto getById(Long itemId);
 

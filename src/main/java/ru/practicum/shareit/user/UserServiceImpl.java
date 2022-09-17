@@ -32,24 +32,15 @@ public class UserServiceImpl implements UserService {
 
     public UserDto getById(Long userId) {
         User user = userRepository.getById(userId);
-        if (user == null) {
-            log.warn("Выброшено исключение UserNotFoundException");
-            throw new UserNotFoundException("Пользователь не найден");
-        } else {
-            UserDto result = UserMapper.toUserDto(user);
-            log.info("Получена пользователь с id {}: {}", userId, result);
-            return result;
-        }
+        validate(user);
+        UserDto result = UserMapper.toUserDto(user);
+        log.info("Получена пользователь с id {}: {}", userId, result);
+        return result;
     }
 
     public UserDto addUser(UserDto userDto) {
+        validate(userDto.getEmail());
         User user = UserMapper.toUser(userDto);
-        for (User u : userRepository.getAll()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                log.warn("Выброшено исключение DuplicateEmailException");
-                throw new DuplicateEmailException("Пользователь с таким email уже существует");
-            }
-        }
         User userToAdd = userRepository.addUser(user);
         UserDto result = UserMapper.toUserDto(userToAdd);
         log.info("Добавлен новый пользователь {}: ", result);
@@ -57,32 +48,42 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto updateUser(Long userId, UserDto userDto) {
+        validate(userDto.getEmail());
         User user = UserMapper.toUser(userDto);
-        for (User u : userRepository.getAll()) {
-            if (u.getEmail().equals(user.getEmail())) {
+        User userToUpdate = userRepository.updateUser(userId, user);
+        validate(userToUpdate);
+        UserDto result = UserMapper.toUserDto(userToUpdate);
+        log.info("Информация о пользователе с id {} обновлена: {}", userId, result);
+        return result;
+    }
+
+    public void deleteUser(Long userId) {
+        User user = userRepository.getById(userId);
+        validate(user);
+        log.info("Пользователь с id {} удалён", userId);
+        userRepository.deleteUser(userId);
+    }
+
+    /* VALIDATION METHODS */
+
+    private void validate(String email) {
+        for (User user : userRepository.getAll()) {
+            if (user.getEmail().equals(email)) {
                 log.warn("Выброшено исключение DuplicateEmailException");
                 throw new DuplicateEmailException("Пользователь с таким email уже существует");
             }
         }
-        if (userRepository.getById(userId) == null) {
-            log.warn("Выброшено исключение UserNotFoundException");
-            throw new UserNotFoundException("Пользователь не найден");
-        } else {
-            User userToUpdate = userRepository.updateUser(userId, user);
-            UserDto result = UserMapper.toUserDto(userToUpdate);
-            log.info("Информация о пользователе с id {} обновлена: {}", userId, result);
-            return result;
-        }
     }
 
-    public void deleteUser(Long userId) {
-        User result = userRepository.getById(userId);
-        if (result == null) {
+    private void validate(User userToValidate) {
+        if (userToValidate == null) {
             log.warn("Выброшено исключение UserNotFoundException");
             throw new UserNotFoundException("Пользователь не найден");
-        } else {
-            log.info("Пользователь с id {} удалён", userId);
-            userRepository.deleteUser(userId);
+        }
+
+        if (userRepository.getById(userToValidate.getId()) == null) {
+            log.warn("Выброшено исключение UserNotFoundException");
+            throw new UserNotFoundException("Пользователь не найден");
         }
     }
 }

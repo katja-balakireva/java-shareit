@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-
 @RestControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -38,5 +37,12 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         String message = "Нет доступа к изменению объекта";
         return handleExceptionInternal(ex, message,
                 new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(value = {ControllerException.class})
+    public ResponseEntity<Object> handleControllerException(Exception ex, WebRequest request) {
+        String message = "Поле класса не прошло валидацию";
+        return handleExceptionInternal(ex, message,
+                new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 }

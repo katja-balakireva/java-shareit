@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.Create;
 import ru.practicum.shareit.Update;
+import ru.practicum.shareit.exceptions.ControllerException;
 
 import java.util.List;
 
@@ -44,14 +46,22 @@ public class ItemController {
 
     @PostMapping
     public ItemDto addItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                           @Validated({Create.class}) @RequestBody ItemDto itemDto) {
+                           @Validated({Create.class}) @RequestBody ItemDto itemDto,
+                           BindingResult result) {
+        if (result.hasFieldErrors()) {
+            throw new ControllerException();
+        }
         return itemService.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
                               @PathVariable Long itemId,
-                              @Validated({Update.class}) @RequestBody ItemDto itemDto) {
+                              @Validated({Update.class}) @RequestBody ItemDto itemDto,
+                              BindingResult result) {
+        if (result.hasFieldErrors()) {
+            throw new ControllerException();
+        }
         return itemService.updateItem(userId, itemId, itemDto);
     }
 

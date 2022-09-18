@@ -96,29 +96,29 @@ public class ItemServiceImpl implements ItemService {
 
     private void validate(Long ownerId, Long userId) {
         if (!userId.equals(ownerId)) {
-            log.warn("Выброшено исключение ValidateOwnershipException");
-            throw new ValidateOwnershipException("Обновлять предмет может только владелец");
+            log.warn("Пользователь с id {} не является владельцем вещи. id владельца: {}", userId, ownerId);
+            throw new ValidateOwnershipException("Обновлять вещь может только владелец");
         }
     }
 
     private void validate(Item itemToValidate) {
         if (itemToValidate == null) {
-            log.warn("Выброшено исключение ItemNotFoundException");
+            log.warn("Вещь не найдена: {}", itemToValidate);
             throw new ItemNotFoundException("Вещь не найдена");
         }
         if (itemRepository.getById(itemToValidate.getId()) == null) {
-            log.warn("Выброшено исключение ItemNotFoundException");
+            log.warn("Вещь не найдена: {}", itemToValidate);
             throw new ItemNotFoundException("Вещь не найдена");
         }
     }
 
     private void validate(User userToValidate) {
         if (userToValidate == null) {
-            log.warn("Выброшено исключение UserNotFoundException");
+            log.warn("Пользователь не найден: {}", userToValidate);
             throw new UserNotFoundException("Пользователь не найден");
         }
         if (userRepository.getById(userToValidate.getId()) == null) {
-            log.warn("Выброшено исключение UserNotFoundException");
+            log.warn("Пользователь не найден: {}", userToValidate);
             throw new UserNotFoundException("Пользователь не найден");
         }
     }

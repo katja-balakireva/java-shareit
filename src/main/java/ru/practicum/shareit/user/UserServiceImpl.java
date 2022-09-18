@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
     private void validate(String email) {
         for (User user : userRepository.getAll()) {
             if (user.getEmail().equals(email)) {
-                log.warn("Выброшено исключение DuplicateEmailException");
+                log.warn("Пользователь с email {} уже существует: {}", email, user);
                 throw new DuplicateEmailException("Пользователь с таким email уже существует");
             }
         }
@@ -77,12 +77,12 @@ public class UserServiceImpl implements UserService {
 
     private void validate(User userToValidate) {
         if (userToValidate == null) {
-            log.warn("Выброшено исключение UserNotFoundException");
+            log.warn("Пользователь не найден: {}", userToValidate);
             throw new UserNotFoundException("Пользователь не найден");
         }
 
         if (userRepository.getById(userToValidate.getId()) == null) {
-            log.warn("Выброшено исключение UserNotFoundException");
+            log.warn("Пользователь не найден: {}", userToValidate);
             throw new UserNotFoundException("Пользователь не найден");
         }
     }

@@ -1,10 +1,15 @@
 package ru.practicum.shareit.exceptions;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestControllerAdvice
@@ -42,8 +47,14 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValid(MethodArgumentNotValidException exception) {
-        return new ErrorResponse(exception.getMessage());
+    public List<String> handleMethodArgumentNotValid(MethodArgumentNotValidException exception) {
+        BindingResult result = exception.getBindingResult();
+        List<FieldError> fieldErrors = result.getFieldErrors();
+        final List<String> errors = new ArrayList<>();
+        for (final FieldError err : fieldErrors) {
+            errors.add(err.getField() + ": " + err.getDefaultMessage());
+        }
+        return errors;
     }
 }
 

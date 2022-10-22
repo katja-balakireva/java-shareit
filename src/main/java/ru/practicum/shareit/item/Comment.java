@@ -1,11 +1,11 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
-import ru.practicum.shareit.item.Item;
+import lombok.Setter;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.Column;
@@ -14,27 +14,27 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "requests", schema = "public")
-@Data
+@Table(name = "comments", schema = "public")
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemRequest {
+public class Comment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-    @Column(name = "description", nullable = false)
-    private String description;
-    @Column(name = "requestor_id", nullable = false)
-    private Long requestor_id;
-    @OneToMany
-    @JoinColumn(name = "id")
-    private List<Item> items;
+    @Column(name = "text", nullable = false)
+    private String text;
+    @Column(name = "item_id", nullable = false)
+    private Long itemId;
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 }

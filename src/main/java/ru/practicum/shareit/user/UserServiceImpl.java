@@ -33,8 +33,10 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getById(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(
-                "Пользователь не найден"));
+
+        User user = validateAndReturnUser(userId);
+//        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(
+//                "Пользователь не найден"));
         UserDto result = UserMapper.toUserDto(user);
         log.info("Получен пользователь с id {}: {}", userId, result);
         return result;
@@ -51,8 +53,11 @@ public class UserServiceImpl implements UserService {
 
    // @Transactional
     public UserDto updateUser(Long userId, UserDto userDto) {
-        User userInDB = userRepository.findById(userId).get();
-        validate(userInDB);
+
+        User userInDB = validateAndReturnUser(userId);
+
+//        User userInDB = userRepository.findById(userId).get();
+//        validate(userInDB);
         if (userDto.getEmail() != null) {
             userInDB.setEmail(userDto.getEmail());
         }
@@ -66,21 +71,33 @@ public class UserServiceImpl implements UserService {
     }
    //  @Transactional
     public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId).get();
-        validate(user);
+        User user = validateAndReturnUser(userId);
+
+//                User user = userRepository.findById(userId).get();
+//        validate(user);
         log.info("Пользователь с id {} удалён", userId);
         userRepository.delete(user);
     }
 
-    private void validate(User userToValidate) {
-        if (userToValidate == null) {
-            log.warn("Пользователь не найден: {}", userToValidate);
-            throw new UserNotFoundException("Пользователь не найден");
-        }
+//    private void validate(User userToValidate) {
+//        if (userToValidate == null) {
+//            log.warn("Пользователь не найден: {}", userToValidate);
+//            throw new UserNotFoundException("Пользователь не найден");
+//        }
+//
+//        if (userRepository.findById(userToValidate.getId()).isEmpty()) {
+//            log.warn("Пользователь не найден: {}", userToValidate);
+//            throw new UserNotFoundException("Пользователь не найден");
+//        }
+//    }
 
-        if (userRepository.findById(userToValidate.getId()).isEmpty()) {
-            log.warn("Пользователь не найден: {}", userToValidate);
+    private User validateAndReturnUser(Long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            log.warn("Пользователь с id {} не найден", userId);
             throw new UserNotFoundException("Пользователь не найден");
+        } else {
+            return user.get();
         }
     }
 }

@@ -49,18 +49,6 @@ public class ItemServiceImpl implements ItemService {
                         .map(itemMapper::toItemInfoDto) // maybe add sorting
                         .collect(Collectors.toList());
         log.info("Получен список из {} вещей: {}", result.size(), result);
-
-//        if (userId == null) {
-//            result = itemRepository.getAll().stream()
-//                    .map(ItemMapper::toItemDto)
-//                    .collect(Collectors.toList());
-//            log.info("Получен список из {} вещей: {}", result.size(), result);
-//        } else {
-//            result = itemRepository.getAllByUser(userId).stream()
-//                    .map(ItemMapper::toItemDto)
-//                    .collect(Collectors.toList());
-//            log.info("Получен список из {} вещей пользователя {}: {}", result.size(), userId, result);
-//        }
         return result;
     }
 
@@ -70,7 +58,10 @@ public class ItemServiceImpl implements ItemService {
         validateUser(userId);
 
         Item item = validateAndReturnItem(itemId);
-        ItemInfoDto result = itemMapper.toItemInfoDto(item);
+        ItemInfoDto result;
+        if (item.getOwner().getId().equals(userId)) {
+            result = itemMapper.toItemInfoDto(item);
+        } else result = itemMapper.toItemInfoDtoNotOwner(item);
 
         log.info("Получена вещь с id {}: {}", itemId, result);
         return result;

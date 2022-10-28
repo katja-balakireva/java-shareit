@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking;
 
+import ru.practicum.shareit.exceptions.BadStateException;
+
 public enum State {
     WAITING,
     APPROVED,
@@ -16,6 +18,6 @@ public enum State {
                 return value;
             }
         }
-        return null;
+        throw new BadStateException("Unknown state: UNSUPPORTED_STATUS");
     }
 }

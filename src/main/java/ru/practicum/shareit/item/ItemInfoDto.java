@@ -6,12 +6,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.Create;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingDto;
+import ru.practicum.shareit.booking.BookingInfoDto;
 import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Data
@@ -24,25 +31,39 @@ public class ItemInfoDto {
     private String description;
     private Boolean available;
     private User owner;
-    private BookingDto lastBooking;
-    private BookingDto nextBooking;
+    private ItemBookingDto lastBooking;
+    private ItemBookingDto nextBooking;
     private List<CommentInfoDto> comments;
 
+    public Optional<Booking> findLastBooking(Collection<Booking> bookings) {
+        List<Booking> result = bookings.stream()
+                .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
+                .sorted(Comparator.comparing(Booking::getEnd))
+                .collect(Collectors.toList());
 
-//    public static class BookingDto {
-//        Long id;
-//        //LocalDateTime start;
-//        //LocalDateTime end;
-//        Long bookerId;
-//
-//        public Long getId() {
-//            return id;
-//        }
-//
-//        public Long getBookerId() {
-//            return bookerId;
-//        }
-//    }
+        if (!result.isEmpty()) {
+            return Optional.of(result.get(0));
+        } else return Optional.empty();
+    }
 
 
+    public Optional<Booking> findNextBooking(Collection<Booking> bookings) {
+        List<Booking> result = bookings.stream()
+               .filter(booking -> booking.getEnd().isAfter(LocalDateTime.now()))
+                .sorted(Comparator.comparing(Booking::getEnd).reversed())
+                .collect(Collectors.toList());
+
+        if (!result.isEmpty()) {
+            return Optional.of(result.get(0));
+        } else return Optional.empty();
+    }
+
+    @AllArgsConstructor
+    @Data
+    public static class ItemBookingDto {
+        Long id;
+        Long bookerId;
+    }
 }
+
+

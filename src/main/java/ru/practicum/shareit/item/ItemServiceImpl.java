@@ -4,14 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.State;
+import ru.practicum.shareit.exceptions.CustomBadRequestException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidateOwnershipException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,18 +31,21 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
     private final ItemMapper itemMapper;
+    private final CommentMapper commentMapper;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
                            UserRepository userRepository,
                            CommentRepository commentRepository,
                            BookingRepository bookingRepository,
-                           ItemMapper itemMapper) {
+                           ItemMapper itemMapper,
+                           CommentMapper commentMapper) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.bookingRepository = bookingRepository;
         this.itemMapper = itemMapper;
+        this.commentMapper = commentMapper;
     }
 
     // +
@@ -127,6 +135,30 @@ public class ItemServiceImpl implements ItemService {
     }
 
     /* COMMENTS METHODS */
+
+    public CommentDto addComment(CommentDto commentDto, Long userId, Long itemId) {
+        Item item = validateAndReturnItem(itemId);
+        validateUser(userId);
+        User author = userRepository.findById(userId).get();
+
+        //make that look nice
+        Collection<Booking> bookings = bookingRepository.findAllByBookerIdAndItemId(userId, itemId);
+        Collection<Booking> bookingsToRemove = new ArrayList<>();
+        bookings.stream().filter(booking -> booking.getStatus().equals(State.REJECTED) ||
+                booking.getEnd().isAfter(LocalDateTime.now())).
+                forEach(bookingsToRemove::add);
+        bookings.removeAll(bookingsToRemove);
+
+        if (bookings.isEmpty() || bookings == null) {
+            throw new CustomBadRequestException("без букинга нельзя оставить комментарий");
+        } else {
+            commentDto.setCreated(LocalDateTime.now());
+            Comment comment = commentMapper.toComment(commentDto, itemId, author);
+            Comment commentToAdd = commentRepository.save(comment);
+            CommentDto result = commentMapper.toCommentDto(commentToAdd);
+            return result;
+        }
+    }
 
     /* VALIDATION METHODS */
 

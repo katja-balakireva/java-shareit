@@ -33,7 +33,7 @@ public class ItemInfoDto {
     private User owner;
     private ItemBookingDto lastBooking;
     private ItemBookingDto nextBooking;
-    private List<CommentInfoDto> comments;
+    private List<CommentDto> comments;
 
     public Optional<Booking> findLastBooking(Collection<Booking> bookings) {
         List<Booking> result = bookings.stream()

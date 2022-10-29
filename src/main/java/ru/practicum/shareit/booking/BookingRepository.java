@@ -11,9 +11,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     //get all
 
     Collection<Booking> findByItemId(Long itemId);
-
     Collection<Booking> findAllByBookerId(Long bookerId);
- //   Collection<Booking> findAllByBookerId(Long bookerId, LocalDateTime localDateTime); //or get all
+   Collection<Booking> findAllByBookerIdAndItemId(Long bookerId, Long itemId);
     Collection<Booking> findAllByBookerIdAndStatus(Long bookerId, State state);
 
     Collection<Booking> findAllByBookerIdAndStartAfter(Long bookerId, LocalDateTime localDateTime);
@@ -43,5 +42,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select b from Booking b left join Item i on b.item.id = i.id where i.owner.id = ?1")
     Collection<Booking> findAllByOwnerId(Long ownerId);
-
 }

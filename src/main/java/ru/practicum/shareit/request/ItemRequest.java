@@ -30,7 +30,7 @@ public class ItemRequest {
     @Column(name = "description", nullable = false)
     private String description;
     @Column(name = "requestor_id", nullable = false)
-    private Long requestor_id;
+    private Long requestorId;
     @OneToMany
     @JoinColumn(name = "id")
     private List<Item> items;

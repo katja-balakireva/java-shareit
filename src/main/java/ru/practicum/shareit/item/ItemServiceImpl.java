@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @Component("DefaultItemService")
 @Slf4j
 public class ItemServiceImpl implements ItemService {
-
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
@@ -48,19 +47,16 @@ public class ItemServiceImpl implements ItemService {
         this.commentMapper = commentMapper;
     }
 
-    // +
     public List<ItemInfoDto> getAll(Long userId) {
         validateUser(userId);
-
         List<ItemInfoDto> result =
                 itemRepository.findByOwnerId(userId).stream()
-                        .map(itemMapper::toItemInfoDto) // maybe add sorting
+                        .map(itemMapper::toItemInfoDto)
                         .collect(Collectors.toList());
         log.info("Получен список из {} вещей: {}", result.size(), result);
         return result;
     }
 
-    // + //может быть убрать юзер айди
     public ItemInfoDto getById(Long itemId, Long userId) {
         validateUserIdIsNull(userId);
         validateUser(userId);
@@ -75,7 +71,6 @@ public class ItemServiceImpl implements ItemService {
         return result;
     }
 
-    // +
     public ItemInfoDto addItem(Long userId, ItemDto itemDto) {
         validateUser(userId);
         Item item = itemMapper.toItem(itemDto, userId);
@@ -85,7 +80,6 @@ public class ItemServiceImpl implements ItemService {
         return result;
     }
 
-    // +
     public ItemInfoDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
         validateUserIdIsNull(userId);
         validateUser(userId);
@@ -93,7 +87,7 @@ public class ItemServiceImpl implements ItemService {
         itemDto.setId(itemId);
 
         Item itemInDB = validateAndReturnItem(itemId);
-        validateOwner(itemInDB.getOwner().getId(),userId);
+        validateOwner(itemInDB.getOwner().getId(), userId);
 
         if (itemDto.getName() != null) {
             itemInDB.setName(itemDto.getName());
@@ -117,47 +111,34 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.delete(item);
     }
 
-    //+
     public List<ItemInfoDto> searchItem(String text) {
-
         List<ItemInfoDto> result;
+
         if (text.isBlank() || text.isEmpty()) {
             result = new ArrayList<>();
         } else {
             result = itemRepository.findByNameContainsOrDescriptionContainsIgnoreCase(text, text).stream()
                     .filter(Item::getAvailable)
                     .map(itemMapper::toItemInfoDto)
-                    .collect(Collectors.toList()); // check availability here
+                    .collect(Collectors.toList());
             log.info("Найденные вещи {}: ", result);
         }
-
         return result;
     }
 
     /* COMMENTS METHODS */
 
     public CommentDto addComment(CommentDto commentDto, Long userId, Long itemId) {
-        Item item = validateAndReturnItem(itemId);
+        validateAndReturnItem(itemId);
         validateUser(userId);
         User author = userRepository.findById(userId).get();
 
-        //make that look nice
-        Collection<Booking> bookings = bookingRepository.findAllByBookerIdAndItemId(userId, itemId);
-        Collection<Booking> bookingsToRemove = new ArrayList<>();
-        bookings.stream().filter(booking -> booking.getStatus().equals(State.REJECTED) ||
-                booking.getEnd().isAfter(LocalDateTime.now())).
-                forEach(bookingsToRemove::add);
-        bookings.removeAll(bookingsToRemove);
-
-        if (bookings.isEmpty() || bookings == null) {
-            throw new CustomBadRequestException("без букинга нельзя оставить комментарий");
-        } else {
-            commentDto.setCreated(LocalDateTime.now());
-            Comment comment = commentMapper.toComment(commentDto, itemId, author);
-            Comment commentToAdd = commentRepository.save(comment);
-            CommentDto result = commentMapper.toCommentDto(commentToAdd);
-            return result;
-        }
+        validateBookings(userId, itemId);
+        commentDto.setCreated(LocalDateTime.now());
+        Comment comment = commentMapper.toComment(commentDto, itemId, author);
+        Comment commentToAdd = commentRepository.save(comment);
+        CommentDto result = commentMapper.toCommentDto(commentToAdd);
+        return result;
     }
 
     /* VALIDATION METHODS */
@@ -190,6 +171,23 @@ public class ItemServiceImpl implements ItemService {
         if (userRepository.findById(userId).isEmpty()) {
             log.warn("Пользователь с id {} не найден", userId);
             throw new UserNotFoundException("Пользователь не найден");
+        }
+    }
+
+    private void validateBookings(Long userId, Long itemId) {
+
+        Collection<Booking> bookings = bookingRepository.findAllByBookerIdAndItemId(userId, itemId);
+        Collection<Booking> bookingsToRemove = new ArrayList<>();
+
+        bookings.stream()
+                .filter(booking -> booking.getStatus().equals(State.REJECTED) ||
+                        booking.getEnd().isAfter(LocalDateTime.now()))
+                .forEach(bookingsToRemove::add);
+        bookings.removeAll(bookingsToRemove);
+
+        if (bookings.isEmpty()) {
+            log.warn("Бронирования не найдены");
+            throw new CustomBadRequestException("Бронирования не найдены");
         }
     }
 }

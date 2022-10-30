@@ -37,20 +37,20 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemInfoDto getById(@RequestHeader("X-Sharer-User-Id") Long userId,
-            @PathVariable Long itemId) {
+                               @PathVariable Long itemId) {
         return itemService.getById(itemId, userId);
     }
 
     @PostMapping
     public ItemInfoDto addItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                           @Validated({Create.class}) @RequestBody ItemDto itemDto) {
+                               @Validated({Create.class}) @RequestBody ItemDto itemDto) {
         return itemService.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemInfoDto updateItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                              @PathVariable Long itemId,
-                              @Validated({Update.class}) @RequestBody ItemDto itemDto) {
+                                  @PathVariable Long itemId,
+                                  @Validated({Update.class}) @RequestBody ItemDto itemDto) {
         return itemService.updateItem(userId, itemId, itemDto);
     }
 
@@ -62,16 +62,14 @@ public class ItemController {
     //items/search?text={text}
     @GetMapping("/search")
     public List<ItemInfoDto> searchItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                                    @RequestParam String text) {
+                                        @RequestParam String text) {
         return itemService.searchItem(text);
     }
 
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                               @Validated({Create.class}) @RequestBody CommentDto commentDto,
+                                 @Validated({Create.class}) @RequestBody CommentDto commentDto,
                                  @PathVariable Long itemId) {
         return itemService.addComment(commentDto, userId, itemId);
     }
-
-
 }

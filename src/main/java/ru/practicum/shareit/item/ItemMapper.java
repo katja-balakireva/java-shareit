@@ -1,12 +1,9 @@
 package ru.practicum.shareit.item;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.BookingDto;
-import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.user.User;
@@ -19,8 +16,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class ItemMapper {
-
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
@@ -31,7 +28,7 @@ public class ItemMapper {
                       BookingRepository bookingRepository,
                       CommentRepository commentRepository,
                       CommentMapper commentMapper
-                      ) {
+    ) {
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
@@ -39,8 +36,8 @@ public class ItemMapper {
     }
 
     public Item toItem(ItemDto itemDto, Long userId) {
-    User owner = getOwner(userId);
-    return Item.builder()
+        User owner = getOwner(userId);
+        return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
@@ -69,15 +66,7 @@ public class ItemMapper {
         nextBooking.ifPresent(booking -> result.setNextBooking(new ItemInfoDto.ItemBookingDto(booking.getId(),
                 booking.getBooker().getId())));
 
-        List<CommentDto> comments =
-                commentRepository.findAllByItemId(item.getId()).stream()
-                        .map(commentMapper::toCommentDto)
-                        .collect(Collectors.toList());
-        if (comments.isEmpty()) {
-            result.setComments(new ArrayList<>());
-        } else {
-            result.setComments(comments);
-        }
+        findAndSetComments(item, result);
         return result;
     }
 
@@ -91,28 +80,31 @@ public class ItemMapper {
                 .build();
 
         //bookings and comments to add
-        Collection<Booking> bookings = bookingRepository.findByItemId(item.getId());
         result.setLastBooking(null);
         result.setNextBooking(null);
 
+        findAndSetComments(item, result);
+        return result;
+    }
 
+    private void findAndSetComments(Item item, ItemInfoDto itemInfoDto) {
         List<CommentDto> comments =
                 commentRepository.findAllByItemId(item.getId()).stream()
                         .map(commentMapper::toCommentDto)
                         .collect(Collectors.toList());
         if (comments.isEmpty()) {
-            result.setComments(new ArrayList<>());
+            itemInfoDto.setComments(new ArrayList<>());
         } else {
-            result.setComments(comments);
+            itemInfoDto.setComments(comments);
         }
-        return result;
     }
 
     private User getOwner(Long ownerId) {
         Optional<User> owner = userRepository.findById(ownerId);
         if (owner.isEmpty()) {
-            throw new UserNotFoundException("");
-        }  else {
+            log.warn("Пользователь с id {} не найден", ownerId);
+            throw new UserNotFoundException("Пользователь не найден");
+        } else {
             return owner.get();
         }
     }

@@ -5,14 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.Create;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.BookingDto;
-import ru.practicum.shareit.booking.BookingInfoDto;
 import ru.practicum.shareit.user.User;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
@@ -46,10 +41,9 @@ public class ItemInfoDto {
         } else return Optional.empty();
     }
 
-
     public Optional<Booking> findNextBooking(Collection<Booking> bookings) {
         List<Booking> result = bookings.stream()
-               .filter(booking -> booking.getEnd().isAfter(LocalDateTime.now()))
+                .filter(booking -> booking.getEnd().isAfter(LocalDateTime.now()))
                 .sorted(Comparator.comparing(Booking::getEnd).reversed())
                 .collect(Collectors.toList());
 

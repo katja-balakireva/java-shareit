@@ -69,10 +69,15 @@ public class CustomExceptionHandler {
         return new ErrorResponse(exception.getMessage());
     }
 
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleBadState(BadStateException exception) {
+    public ErrorResponse handleBadState(UnsupportedStateException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingOwnership(ValidateBookingOwnershipException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 }

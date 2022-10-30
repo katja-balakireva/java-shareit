@@ -1,10 +1,11 @@
 package ru.practicum.shareit.item;
 
-
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.User;
 
 @Component
+@NoArgsConstructor
 public class CommentMapper {
 
     public CommentDto toCommentDto(Comment comment) {
@@ -17,7 +18,6 @@ public class CommentMapper {
     }
 
     public Comment toComment(CommentDto commentDto, Long itemId, User author) {
-
         return Comment.builder()
                 .id(commentDto.getId())
                 .text(commentDto.getText())

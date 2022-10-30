@@ -2,13 +2,11 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.Create;
-import ru.practicum.shareit.Update;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

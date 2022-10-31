@@ -92,6 +92,7 @@ public class ItemMapper {
                 commentRepository.findAllByItemId(item.getId()).stream()
                         .map(commentMapper::toCommentDto)
                         .collect(Collectors.toList());
+
         if (comments.isEmpty()) {
             itemInfoDto.setComments(new ArrayList<>());
         } else {

@@ -140,7 +140,7 @@ public class BookingServiceImpl implements BookingService {
     private void checkState(Booking booking, Boolean approved) {
         if (booking.getStatus().equals(State.APPROVED) ||
                 booking.getStatus().equals(State.REJECTED)) {
-            log.warn("Невозможно поменять статус бронирования");
+            log.warn("Невозможно поменять статус у бронирования: {}", booking);
             throw new CustomBadRequestException("Невозможно поменять статус бронирования");
         }
         if (approved) {

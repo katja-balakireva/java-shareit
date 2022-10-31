@@ -36,9 +36,7 @@ public class ItemInfoDto {
                 .sorted(Comparator.comparing(Booking::getEnd))
                 .collect(Collectors.toList());
 
-        if (!result.isEmpty()) {
-            return Optional.of(result.get(0));
-        } else return Optional.empty();
+        return (result.isEmpty()) ? Optional.empty() : Optional.of(result.get(0));
     }
 
     public Optional<Booking> findNextBooking(Collection<Booking> bookings) {
@@ -47,9 +45,7 @@ public class ItemInfoDto {
                 .sorted(Comparator.comparing(Booking::getEnd).reversed())
                 .collect(Collectors.toList());
 
-        if (!result.isEmpty()) {
-            return Optional.of(result.get(0));
-        } else return Optional.empty();
+        return (result.isEmpty()) ? Optional.empty() : Optional.of(result.get(0));
     }
 
     @AllArgsConstructor

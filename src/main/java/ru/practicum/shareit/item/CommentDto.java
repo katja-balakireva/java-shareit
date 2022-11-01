@@ -10,6 +10,7 @@ import ru.practicum.shareit.Create;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Component
 @Getter
@@ -17,12 +18,11 @@ import javax.validation.constraints.NotNull;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemDto {
+public class CommentDto {
     private Long id;
-    @NotBlank(message = "Имя не может быть пустым", groups = {Create.class})
-    private String name;
-    @NotBlank(message = "Описание не может быть пустым", groups = {Create.class})
-    private String description;
-    @NotNull(message = "Не задано значение доступности", groups = {Create.class})
-    private Boolean available;
+    @NotBlank(message = "Комментарий не может быть пустым", groups = {Create.class})
+    @NotNull(message = "Комментарий не может быть null", groups = {Create.class})
+    private String text;
+    private String authorName;
+    private LocalDateTime created;
 }

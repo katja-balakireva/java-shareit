@@ -1,29 +1,112 @@
 package ru.practicum.shareit.item;
 
-import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserRepository;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
-@NoArgsConstructor
+@Slf4j
 public class ItemMapper {
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
 
-    public static ItemDto toItemDto(Item item) {
-
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .build();
+    @Autowired
+    public ItemMapper(UserRepository userRepository,
+                      BookingRepository bookingRepository,
+                      CommentRepository commentRepository,
+                      CommentMapper commentMapper
+    ) {
+        this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
+        this.commentMapper = commentMapper;
     }
 
-    public static Item toItem(ItemDto itemDto) {
-
+    public Item toItem(ItemDto itemDto, Long userId) {
+        User owner = getOwner(userId);
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
+                .owner(owner)
                 .build();
+    }
+
+    public ItemInfoDto toItemInfoDto(Item item) {
+        ItemInfoDto result = ItemInfoDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .owner(item.getOwner())
+                .build();
+
+        //bookings and comments to add
+        Collection<Booking> bookings = bookingRepository.findByItemId(item.getId());
+
+        Optional<Booking> lastBooking = result.findLastBooking(bookings);
+        lastBooking.ifPresent(booking -> result.setLastBooking(new ItemInfoDto.ItemBookingDto(booking.getId(),
+                booking.getBooker().getId())));
+
+        Optional<Booking> nextBooking = result.findNextBooking(bookings);
+        nextBooking.ifPresent(booking -> result.setNextBooking(new ItemInfoDto.ItemBookingDto(booking.getId(),
+                booking.getBooker().getId())));
+
+        findAndSetComments(item, result);
+        return result;
+    }
+
+    public ItemInfoDto toItemInfoDtoNotOwner(Item item) {
+        ItemInfoDto result = ItemInfoDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .owner(item.getOwner())
+                .build();
+
+        //bookings and comments to add
+        result.setLastBooking(null);
+        result.setNextBooking(null);
+
+        findAndSetComments(item, result);
+        return result;
+    }
+
+    private void findAndSetComments(Item item, ItemInfoDto itemInfoDto) {
+        List<CommentDto> comments =
+                commentRepository.findAllByItemId(item.getId()).stream()
+                        .map(commentMapper::toCommentDto)
+                        .collect(Collectors.toList());
+
+        if (comments.isEmpty()) {
+            itemInfoDto.setComments(new ArrayList<>());
+        } else {
+            itemInfoDto.setComments(comments);
+        }
+    }
+
+    private User getOwner(Long ownerId) {
+        Optional<User> owner = userRepository.findById(ownerId);
+        if (owner.isEmpty()) {
+            log.warn("Пользователь с id {} не найден", ownerId);
+            throw new UserNotFoundException("Пользователь не найден");
+        } else {
+            return owner.get();
+        }
     }
 }

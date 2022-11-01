@@ -28,6 +28,12 @@ public class CustomExceptionHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingNotFound(BookingNotFoundException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleEmailValidation(EmailValidationException exception) {
         return new ErrorResponse(exception.getMessage());
@@ -55,6 +61,24 @@ public class CustomExceptionHandler {
             errors.add(err.getField() + ": " + err.getDefaultMessage());
         }
         return errors;
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequest(CustomBadRequestException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleBadState(UnsupportedStateException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingOwnership(ValidateBookingOwnershipException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 }
 

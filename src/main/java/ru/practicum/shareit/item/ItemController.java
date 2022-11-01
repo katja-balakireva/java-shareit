@@ -31,25 +31,26 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemInfoDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.getAll(userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getById(@PathVariable Long itemId) {
-        return itemService.getById(itemId);
+    public ItemInfoDto getById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                               @PathVariable Long itemId) {
+        return itemService.getById(itemId, userId);
     }
 
     @PostMapping
-    public ItemDto addItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                           @Validated({Create.class}) @RequestBody ItemDto itemDto) {
+    public ItemInfoDto addItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
+                               @Validated({Create.class}) @RequestBody ItemDto itemDto) {
         return itemService.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                              @PathVariable Long itemId,
-                              @Validated({Update.class}) @RequestBody ItemDto itemDto) {
+    public ItemInfoDto updateItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
+                                  @PathVariable Long itemId,
+                                  @Validated({Update.class}) @RequestBody ItemDto itemDto) {
         return itemService.updateItem(userId, itemId, itemDto);
     }
 
@@ -60,8 +61,15 @@ public class ItemController {
 
     //items/search?text={text}
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                                    @RequestParam String text) {
+    public List<ItemInfoDto> searchItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
+                                        @RequestParam String text) {
         return itemService.searchItem(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
+                                 @Validated({Create.class}) @RequestBody CommentDto commentDto,
+                                 @PathVariable Long itemId) {
+        return itemService.addComment(commentDto, userId, itemId);
     }
 }

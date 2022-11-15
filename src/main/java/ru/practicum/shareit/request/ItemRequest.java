@@ -23,6 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemRequest {
+    /*          */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

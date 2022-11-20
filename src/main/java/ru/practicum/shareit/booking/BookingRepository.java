@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -11,36 +12,38 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     //get all
     Collection<Booking> findByItemId(Long itemId);
 
-    Collection<Booking> findAllByBookerId(Long bookerId);
+    Collection<Booking> findAllByBookerIdOrderByStartDesc(Long bookerId, PageRequest pageRequest);
 
     Collection<Booking> findAllByBookerIdAndItemId(Long bookerId, Long itemId);
 
-    Collection<Booking> findAllByBookerIdAndStatus(Long bookerId, State state);
+    Collection<Booking> findAllByBookerIdAndStatusOrderByStartDesc(Long bookerId, State state, PageRequest pageRequest);
 
-    Collection<Booking> findAllByBookerIdAndStartAfter(Long bookerId, LocalDateTime localDateTime);
+    Collection<Booking> findAllByBookerIdAndStartAfterOrderByStartDesc(Long bookerId, LocalDateTime localDateTime,
+                                                                       PageRequest pageRequest);
 
-    Collection<Booking> findAllByBookerIdAndEndBefore(Long bookerId, LocalDateTime localDateTime);
+    Collection<Booking> findAllByBookerIdAndEndBeforeOrderByStartDesc(Long bookerId, LocalDateTime localDateTime,
+                                                                      PageRequest pageRequest);
 
     //queries
-    @Query("select b from Booking b where b.booker.id = ?1 and ?2 between b.start and b.end")
-    Collection<Booking> getAllByBookerId(Long bookerId, LocalDateTime dateTime);
+    @Query("select b from Booking b where b.booker.id = ?1 and ?2 between b.start and b.end order by b.start desc")
+    Collection<Booking> getAllByBookerId(Long bookerId, LocalDateTime dateTime, PageRequest pageRequest);
 
     @Query("select b from Booking b left join Item i on b.item.id = i.id where i.owner.id = ?1 and " +
-            "?2 between b.start and b.end")
-    Collection<Booking> getCurrentBookingsByOwnerId(Long ownerId, LocalDateTime dateTime);
+            "?2 between b.start and b.end order by b.start desc")
+    Collection<Booking> getCurrentBookingsByOwnerId(Long ownerId, LocalDateTime dateTime, PageRequest pageRequest);
 
     @Query("select b from Booking b left join Item i on b.item.id = i.id where i.owner.id = ?1 and b" +
-            ".end < ?2")
-    Collection<Booking> getPastBookingsByOwnerId(Long ownerId, LocalDateTime dateTime);
+            ".end < ?2 order by b.start desc")
+    Collection<Booking> getPastBookingsByOwnerId(Long ownerId, LocalDateTime dateTime, PageRequest pageRequest);
 
     @Query("select b from Booking b left join Item i on b.item.id = i.id where i.owner.id = ?1 and b" +
-            ".start > ?2")
-    Collection<Booking> getFutureBookingsByOwnerId(Long ownerId, LocalDateTime dateTime);
+            ".start > ?2 order by b.start desc")
+    Collection<Booking> getFutureBookingsByOwnerId(Long ownerId, LocalDateTime dateTime, PageRequest pageRequest);
 
     @Query("select b from Booking b left join Item i on b.item.id = i.id where i.owner.id = ?1 and b" +
-            ".status = ?2")
-    Collection<Booking> findAllByOwnerIdAndStatus(Long ownerId, State status);
+            ".status = ?2 order by b.start desc")
+    Collection<Booking> findAllByOwnerIdAndStatus(Long ownerId, State status, PageRequest pageRequest);
 
-    @Query("select b from Booking b left join Item i on b.item.id = i.id where i.owner.id = ?1")
-    Collection<Booking> findAllByOwnerId(Long ownerId);
+    @Query("select b from Booking b left join Item i on b.item.id = i.id where i.owner.id = ?1 order by b.start desc")
+    Collection<Booking> findAllByOwnerId(Long ownerId, PageRequest pageRequest);
 }

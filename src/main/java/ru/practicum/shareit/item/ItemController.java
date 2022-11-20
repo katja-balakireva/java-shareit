@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +16,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.Create;
 import ru.practicum.shareit.Update;
+import ru.practicum.shareit.custom.CustomPageRequest;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
+@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -31,8 +36,14 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemInfoDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getAll(userId);
+    public List<ItemInfoDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                    Integer from,
+                                    @Positive @RequestParam(name = "size", defaultValue = "10")
+                                    Integer size
+    ) {
+        PageRequest pageRequest = CustomPageRequest.of(from, size);
+        return itemService.getAll(userId, pageRequest);
     }
 
     @GetMapping("/{itemId}")
@@ -62,8 +73,14 @@ public class ItemController {
     //items/search?text={text}
     @GetMapping("/search")
     public List<ItemInfoDto> searchItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                                        @RequestParam String text) {
-        return itemService.searchItem(text);
+                                        @RequestParam String text,
+                                        @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                        Integer from,
+                                        @Positive @RequestParam(name = "size", defaultValue = "10")
+                                        Integer size
+    ) {
+        PageRequest pageRequest = CustomPageRequest.of(from, size);
+        return itemService.searchItem(text, pageRequest);
     }
 
     @PostMapping("/{itemId}/comment")

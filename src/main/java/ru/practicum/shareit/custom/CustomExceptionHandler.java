@@ -1,4 +1,4 @@
-package ru.practicum.shareit.exceptions;
+package ru.practicum.shareit.custom;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -30,6 +30,12 @@ public class CustomExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleBookingNotFound(BookingNotFoundException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleRequestNotFound(RequestNotFoundException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,9 +12,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "requests", schema = "public")
@@ -23,16 +23,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemRequest {
-    /*          */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
     @Column(name = "description", nullable = false)
     private String description;
-    @Column(name = "requestor_id", nullable = false)
-    private Long requestorId;
-    @OneToMany
-    @JoinColumn(name = "id")
-    private List<Item> items;
+    @Column(name = "created", nullable = false)
+    private LocalDateTime created;
+    @ManyToOne
+    @JoinColumn(name = "requestor_id", nullable = false)
+    private User user;
 }

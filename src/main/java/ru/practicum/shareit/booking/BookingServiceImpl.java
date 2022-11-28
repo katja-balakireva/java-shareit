@@ -48,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
 
         Collection<Booking> result = sortByStateAndBookerId(state, userId, pageRequest);
         log.info("Получен список бронирований пользователя {}", userId);
-        return result.stream().map(bookingMapper::toBookingInfoDto)
+        return result.stream().map(BookingMapper::toBookingInfoDto)
                 .sorted(Comparator.comparingLong(BookingInfoDto::getId).reversed())
                 .collect(Collectors.toList());
     }
@@ -58,7 +58,7 @@ public class BookingServiceImpl implements BookingService {
 
         Collection<Booking> result = sortByStateAndOwnerId(state, ownerId, pageRequest);
         log.info("Получен список бронирований владельца {}", ownerId);
-        return result.stream().map(bookingMapper::toBookingInfoDto)
+        return result.stream().map(BookingMapper::toBookingInfoDto)
                 .sorted(Comparator.comparingLong(BookingInfoDto::getId).reversed())
                 .collect(Collectors.toList());
     }
@@ -72,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingNotFoundException("Бронирование не найдено");
         }
 
-        BookingInfoDto result = bookingMapper.toBookingInfoDto(bookingInDB);
+        BookingInfoDto result = BookingMapper.toBookingInfoDto(bookingInDB);
         log.info("Получено бронирование пользователя с id {}: {}", userId, result);
         return result;
     }
@@ -86,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
         bookingDto.setStatus(State.WAITING);
         Booking booking = bookingMapper.toBooking(bookingDto, userId);
         Booking bookingToAdd = bookingRepository.save(booking);
-        BookingInfoDto result = bookingMapper.toBookingInfoDto(bookingToAdd);
+        BookingInfoDto result = BookingMapper.toBookingInfoDto(bookingToAdd);
         log.info("Пользователь {} добавил новое бронирование: {}", userId, result);
         return result;
     }
@@ -101,7 +101,7 @@ public class BookingServiceImpl implements BookingService {
         checkState(bookingInDB, approved);
 
         Booking bookingToUpdate = bookingRepository.save(bookingInDB);
-        BookingInfoDto result = bookingMapper.toBookingInfoDto(bookingToUpdate);
+        BookingInfoDto result = BookingMapper.toBookingInfoDto(bookingToUpdate);
         log.info("Бронирование c id {} обновлено: {}", bookingId, result);
         return result;
     }

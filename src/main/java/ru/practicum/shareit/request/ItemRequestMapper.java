@@ -16,14 +16,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ItemRequestMapper {
 
-    private ItemMapper itemMapper;
+    private static ItemMapper itemMapper;
 
     @Autowired
     public ItemRequestMapper(ItemMapper itemMapper) {
         this.itemMapper = itemMapper;
     }
 
-    public ItemRequestInfoDto toItemRequestInfoDto(ItemRequest itemRequest, List<Item> items) {
+    public static ItemRequestInfoDto toItemRequestInfoDto(ItemRequest itemRequest, List<Item> items) {
         List<ItemDto> itemsResult = items.stream()
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -35,11 +35,18 @@ public class ItemRequestMapper {
                         .created(itemRequest.getCreated())
                         .items(itemsResult)
                         .build();
+        return result;
+    }
+
+    public static ItemRequestDto toItemRequestDto(ItemRequest itemRequest) {
+        ItemRequestDto result = ItemRequestDto.builder()
+                .description(itemRequest.getDescription())
+                .build();
 
         return result;
     }
 
-    public ItemRequest toItemRequest(ItemRequestDto itemRequestDto, User user) {
+    public static ItemRequest toItemRequest(ItemRequestDto itemRequestDto, User user) {
         ItemRequest result = ItemRequest.builder()
                 .description(itemRequestDto.getDescription())
                 .created(LocalDateTime.now())

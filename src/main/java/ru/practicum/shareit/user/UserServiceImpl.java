@@ -62,7 +62,8 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long userId) {
         User user = validateAndReturnUser(userId);
         log.info("Пользователь с id {} удалён", userId);
-        userRepository.delete(user);
+        //userRepository.delete(user);
+        userRepository.deleteById(user.getId());
     }
 
     private User validateAndReturnUser(Long userId) {

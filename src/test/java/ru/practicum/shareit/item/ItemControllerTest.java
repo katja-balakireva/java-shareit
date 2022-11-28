@@ -144,8 +144,7 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andDo(MockMvcResultHandlers.print());
 
-        verify(itemService, times(1)).getAll
-                (1L, CustomPageRequest.of(0, 10));
+        verify(itemService, times(1)).getAll(1L, CustomPageRequest.of(0, 10));
     }
 
     @Test

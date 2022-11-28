@@ -46,7 +46,7 @@ public class BookingRepositoryTest {
         testOwner = createTestOwner();
         testItem = createTestItem(testOwner);
         lastBooking = createTestBooking(START, END, State.APPROVED);
-        nextBooking = createTestBooking(START.plusMonths(3), END.plusMonths(3),State.WAITING);
+        nextBooking = createTestBooking(START.plusMonths(3), END.plusMonths(3), State.WAITING);
     }
 
     @Test

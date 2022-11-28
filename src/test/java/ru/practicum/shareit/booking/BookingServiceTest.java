@@ -55,7 +55,7 @@ public class BookingServiceTest {
         testBooker = new User(2L, "name_2", "email_2@test.com");
         testItem = new Item(1L, "TestItem", "TestDescription",
                 true, testOwner, null, null);
-        testBooking = new Booking(1L, START, END, testItem, testBooker,State.WAITING);
+        testBooking = new Booking(1L, START, END, testItem, testBooker, State.WAITING);
     }
 
     @Test
@@ -79,8 +79,8 @@ public class BookingServiceTest {
     @Test
     void testUpdateBooking() {
 
-        Booking waitingBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker,State.WAITING);
-        Booking approvedBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker,State.APPROVED);
+        Booking waitingBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.WAITING);
+        Booking approvedBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.APPROVED);
         when(bookingRepository.save(any())).thenReturn(waitingBooking);
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(waitingBooking));
         when(bookingRepository.save(any())).thenReturn(approvedBooking);
@@ -121,34 +121,34 @@ public class BookingServiceTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testBooker));
         Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
-        when(bookingRepository.getAllByBookerId(anyLong(),any(),any())).thenReturn(List.of(testBooking));
+        when(bookingRepository.getAllByBookerId(anyLong(), any(), any())).thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultCurrent = bookingService.getAllByUserId(testOwner.getId(), "CURRENT",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultCurrent);
         assertEquals(allBookings, resultCurrent);
 
-        when(bookingRepository.findAllByBookerIdOrderByStartDesc(anyLong(),any())).thenReturn(List.of(testBooking));
+        when(bookingRepository.findAllByBookerIdOrderByStartDesc(anyLong(), any())).thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultAll = bookingService.getAllByUserId(testOwner.getId(), "ALL",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultAll);
         assertEquals(allBookings, resultAll);
 
-        when(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(anyLong(),any(),any()))
+        when(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(anyLong(), any(), any()))
                 .thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultFuture = bookingService.getAllByUserId(testOwner.getId(), "FUTURE",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultFuture);
         assertEquals(allBookings, resultFuture);
 
-        when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(),any(),any()))
+        when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(), any(), any()))
                 .thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultPast = bookingService.getAllByUserId(testOwner.getId(), "PAST",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultPast);
         assertEquals(allBookings, resultPast);
 
         assertThrows(UnsupportedStateException.class, () -> bookingService.getAllByUserId(testOwner.getId(),
-                "hello", CustomPageRequest.of(0,10)));
+                "hello", CustomPageRequest.of(0, 10)));
     }
 
     @Test
@@ -157,33 +157,33 @@ public class BookingServiceTest {
 
         Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
-        when(bookingRepository.getCurrentBookingsByOwnerId(anyLong(),any(),any())).thenReturn(List.of(testBooking));
+        when(bookingRepository.getCurrentBookingsByOwnerId(anyLong(), any(), any())).thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultCurrent = bookingService.getAllByOwnerId(testOwner.getId(), "CURRENT",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultCurrent);
         assertEquals(allBookings, resultCurrent);
 
-        when(bookingRepository.findAllByOwnerId(anyLong(),any())).thenReturn(List.of(testBooking));
+        when(bookingRepository.findAllByOwnerId(anyLong(), any())).thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultAll = bookingService.getAllByOwnerId(testOwner.getId(), "ALL",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultAll);
         assertEquals(allBookings, resultAll);
 
-        when(bookingRepository.getFutureBookingsByOwnerId(anyLong(),any(),any()))
+        when(bookingRepository.getFutureBookingsByOwnerId(anyLong(), any(), any()))
                 .thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultFuture = bookingService.getAllByOwnerId(testOwner.getId(), "FUTURE",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultFuture);
         assertEquals(allBookings, resultFuture);
 
-        when(bookingRepository.getPastBookingsByOwnerId(anyLong(),any(),any()))
+        when(bookingRepository.getPastBookingsByOwnerId(anyLong(), any(), any()))
                 .thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultPast = bookingService.getAllByOwnerId(testOwner.getId(), "PAST",
-                CustomPageRequest.of(0,10));
+                CustomPageRequest.of(0, 10));
         assertNotNull(resultPast);
         assertEquals(allBookings, resultPast);
 
         assertThrows(UnsupportedStateException.class, () -> bookingService.getAllByOwnerId(testOwner.getId(),
-                "goodbye", CustomPageRequest.of(0,10)));
+                "goodbye", CustomPageRequest.of(0, 10)));
     }
 }

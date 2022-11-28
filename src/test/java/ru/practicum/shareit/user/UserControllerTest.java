@@ -82,11 +82,11 @@ public class UserControllerTest {
 
     @Test
     void testGetAll() throws Exception {
-        UserDto user_1 = new UserDto(1L, "name_1", "email_1@test.com");
-        UserDto user_2 = new UserDto(2L, "name_2", "email_2@test.com");
-        UserDto user_3 = new UserDto(3L, "name_3", "email_3@test.com");
+        UserDto firstUser = new UserDto(1L, "name_1", "email_1@test.com");
+        UserDto secondUser = new UserDto(2L, "name_2", "email_2@test.com");
+        UserDto thirdUser = new UserDto(3L, "name_3", "email_3@test.com");
 
-        List<UserDto> users = new ArrayList<>(List.of(user_1, user_2, user_3));
+        List<UserDto> users = new ArrayList<>(List.of(firstUser, secondUser, thirdUser));
 
         when(userService.getAll()).thenReturn(users);
 

@@ -54,8 +54,8 @@ public class ItemRequestControllerTest {
     static void setUp() {
         testOwner = new User(1L, "OwnerName", "ownerEmail@test.com");
         testRequester = new User(2L, "RequesterName", "requesterEmail@test.com");
-        testItemDto = new ItemDto(1L, 1L,  "TestItem", "TestDescription", true);
-        testRequest = new ItemRequest(1L, "TestDescription",CREATED, testRequester);
+        testItemDto = new ItemDto(1L, 1L, "TestItem", "TestDescription", true);
+        testRequest = new ItemRequest(1L, "TestDescription", CREATED, testRequester);
         testRequestInfoDto = new ItemRequestInfoDto(testRequest.getId(), testRequest.getDescription(),
                 testRequest.getCreated(), Collections.singletonList(testItemDto));
     }
@@ -77,7 +77,7 @@ public class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.description").value(testRequestInfoDto.getDescription()))
                 .andExpect(jsonPath("$.created").value(testRequestInfoDto.getCreated().toString()))
                 .andExpect(jsonPath("$.items", hasSize(1)))
-               .andDo(MockMvcResultHandlers.print());
+                .andDo(MockMvcResultHandlers.print());
 
         verify(requestService, times(1)).addItemRequest(anyLong(), any(ItemRequestDto.class));
     }

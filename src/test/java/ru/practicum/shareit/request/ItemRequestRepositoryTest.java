@@ -1,6 +1,5 @@
 package ru.practicum.shareit.request;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +28,16 @@ public class ItemRequestRepositoryTest {
     private User testUser;
     private User otherUser;
     private ItemRequest testRequest;
-    private ItemRequest otherRequest_1;
-    private ItemRequest otherRequest_2;
+    private ItemRequest otherRequestFirst;
+    private ItemRequest otherRequestSecond;
 
     @BeforeEach
     void setUp() {
         testUser = createTestUser();
         otherUser = createOtherUser();
         testRequest = createTestRequest();
-        otherRequest_1 = createOtherRequest("text_1");
-        otherRequest_2 = createOtherRequest("text_2");
+        otherRequestFirst = createOtherRequest("text_1");
+        otherRequestSecond = createOtherRequest("text_2");
     }
 
     @Test

@@ -74,6 +74,5 @@ public class ItemMapperTest {
         assertEquals(testItem.getName(), result.getName());
         assertEquals(testItem.getDescription(), result.getDescription());
         assertEquals(testItem.getAvailable(), result.getAvailable());
-
     }
 }

@@ -1,39 +1,24 @@
 package ru.practicum.shareit.request;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class ItemRequestMapper {
 
-    private static ItemMapper itemMapper;
-
-    @Autowired
-    public ItemRequestMapper(ItemMapper itemMapper) {
-        ItemRequestMapper.itemMapper = itemMapper;
-    }
-
-    public static ItemRequestInfoDto toItemRequestInfoDto(ItemRequest itemRequest, List<Item> items) {
-        List<ItemDto> itemsResult = items.stream()
-                .map(itemMapper::toItemDto)
-                .collect(Collectors.toList());
-
+    public static ItemRequestInfoDto toItemRequestInfoDto(ItemRequest itemRequest, List<ItemDto> items) {
         ItemRequestInfoDto result =
                 ItemRequestInfoDto.builder()
                         .id(itemRequest.getId())
                         .description(itemRequest.getDescription())
                         .created(itemRequest.getCreated())
-                        .items(itemsResult)
+                        .items(items)
                         .build();
         return result;
     }

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.custom.RequestNotFoundException;
 import ru.practicum.shareit.custom.UserNotFoundException;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemDto;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -25,17 +27,17 @@ public class RequestServiceImpl implements RequestService {
     private final ItemRequestRepository itemRequestRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-    private final ItemRequestMapper itemRequestMapper;
+    private final ItemMapper itemMapper;
 
     @Autowired
     public RequestServiceImpl(ItemRequestRepository itemRequestRepository,
                               ItemRepository itemRepository,
                               UserRepository userRepository,
-                              ItemRequestMapper itemRequestMapper) {
+                              ItemMapper itemMapper) {
         this.itemRequestRepository = itemRequestRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
-        this.itemRequestMapper = itemRequestMapper;
+        this.itemMapper = itemMapper;
     }
 
 
@@ -45,7 +47,11 @@ public class RequestServiceImpl implements RequestService {
         ItemRequest itemRequest = validateAndReturnRequest(requestId);
         List<Item> items = itemRepository.findAllByRequestId(requestId);
 
-        ItemRequestInfoDto result = itemRequestMapper.toItemRequestInfoDto(itemRequest, items);
+        List<ItemDto> resultItems = items.stream()
+                .map(itemMapper::toItemDto)
+                .collect(Collectors.toList());
+
+        ItemRequestInfoDto result = ItemRequestMapper.toItemRequestInfoDto(itemRequest, resultItems);
         return result;
     }
 
@@ -53,9 +59,14 @@ public class RequestServiceImpl implements RequestService {
         validateAndReturnUser(userId);
 
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByUserId(userId, pageRequest);
+
         return itemRequests.stream()
-                .map(r -> itemRequestMapper.toItemRequestInfoDto(
-                        r, itemRepository.findAllByRequestId(r.getId())))
+                .map(r -> ItemRequestMapper.toItemRequestInfoDto(
+                        r,
+                        itemRepository.findAllByRequestId(r.getId()).stream()
+                                .map(itemMapper::toItemDto)
+                                .collect(Collectors.toList())
+                ))
                 .collect(Collectors.toList());
         // return null;
     }
@@ -63,9 +74,9 @@ public class RequestServiceImpl implements RequestService {
     public ItemRequestInfoDto addItemRequest(Long userId, ItemRequestDto itemRequestDto) {
         validateUserId(userId);
         User user = validateAndReturnUser(userId);
-        ItemRequest requestToAdd = itemRequestMapper.toItemRequest(itemRequestDto, user);
+        ItemRequest requestToAdd = ItemRequestMapper.toItemRequest(itemRequestDto, user);
         itemRequestRepository.save(requestToAdd);
-        ItemRequestInfoDto result = itemRequestMapper.toItemRequestInfoDto(requestToAdd, new ArrayList<>());
+        ItemRequestInfoDto result = ItemRequestMapper.toItemRequestInfoDto(requestToAdd, new ArrayList<>());
         return result;
     }
 
@@ -74,8 +85,10 @@ public class RequestServiceImpl implements RequestService {
         validateAndReturnUser(userId);
         List<ItemRequest> itemRequests = itemRequestRepository.findAllOthersByUserId(userId, pageRequest);
         return itemRequests.stream()
-                .map(r -> itemRequestMapper.toItemRequestInfoDto(
-                        r, itemRepository.findAllByRequestId(r.getId())))
+                .map(r -> ItemRequestMapper.toItemRequestInfoDto(
+                        r, itemRepository.findAllByRequestId(r.getId()).stream()
+                                .map(itemMapper::toItemDto)
+                                .collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 

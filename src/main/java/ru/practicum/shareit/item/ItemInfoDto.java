@@ -29,7 +29,7 @@ public class ItemInfoDto {
     private ItemBookingDto lastBooking;
     private ItemBookingDto nextBooking;
     private List<CommentDto> comments;
-    private Long requestId; //
+    private Long requestId;
 
     public Optional<Booking> findLastBooking(Collection<Booking> bookings) {
         List<Booking> result = bookings.stream()

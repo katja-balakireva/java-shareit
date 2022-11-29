@@ -8,12 +8,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.custom.CustomPageRequest;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemDto;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,6 +36,8 @@ public class RequestServiceTest {
     private ItemRepository itemRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ItemMapper itemMapper;
 
     private User testOwner;
     private User testRequester;
@@ -49,9 +55,10 @@ public class RequestServiceTest {
 
         testItem = itemRepository.save(new Item(1L, "TestItem", "TestDescription",
                 true, testOwner, testRequest.getId(), null));
-
+        List<ItemDto> testResultList = Stream.of(testItem).map(itemMapper::toItemDto)
+                .collect(Collectors.toList());
         testRequestDto = ItemRequestMapper.toItemRequestDto(testRequest);
-        testRequestInfoDto = ItemRequestMapper.toItemRequestInfoDto(testRequest, List.of(testItem));
+        testRequestInfoDto = ItemRequestMapper.toItemRequestInfoDto(testRequest, testResultList);
     }
 
 

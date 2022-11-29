@@ -106,7 +106,6 @@ public class ItemRequestControllerTest {
 
     @Test
     void testGetAllByUserId() throws Exception {
-
         when(requestService.getAllByUserId(anyLong(), any()))
                 .thenReturn(Collections.singletonList(testRequestInfoDto));
 
@@ -129,7 +128,6 @@ public class ItemRequestControllerTest {
 
     @Test
     void testGetAllRequestsNotOwner() throws Exception {
-
         when(requestService.getAllRequestsNotOwner(anyLong(), any()))
                 .thenReturn(Collections.singletonList(testRequestInfoDto));
 

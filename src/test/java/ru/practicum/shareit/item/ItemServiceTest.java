@@ -39,13 +39,6 @@ public class ItemServiceTest {
     private ItemRequestRepository requestRepository;
     @Autowired
     private ItemMapper itemMapper;
-    @Autowired
-    private CommentMapper commentMapper;
-
-    private static final LocalDateTime START = LocalDateTime.of(2023,
-            1, 24, 8, 30, 10);
-    private static final LocalDateTime END = LocalDateTime.of(2023,
-            5, 24, 8, 30, 10);
 
     private User testUser;
     private User testBooker;
@@ -98,8 +91,8 @@ public class ItemServiceTest {
 
     @Test
     void testSearchItem() {
-
         List<ItemInfoDto> result = itemService.searchItem("TestItem", CustomPageRequest.of(0, 10));
+
         assertNotNull(result);
         assertEquals(testItemInfoDto.getId(), result.get(0).getId());
         assertEquals(testItemInfoDto.getName(), result.get(0).getName());
@@ -112,6 +105,7 @@ public class ItemServiceTest {
     @Test
     void testGetById() {
         ItemInfoDto result = itemService.getById(testItem.getId(), testUser.getId());
+
         assertNotNull(result);
         assertEquals(testItemInfoDto.getId(), result.getId());
         assertEquals(testItemInfoDto.getName(), result.getName());
@@ -123,8 +117,8 @@ public class ItemServiceTest {
 
     @Test
     void testGetAll() {
-
         List<ItemInfoDto> result = itemService.getAll(testUser.getId(), CustomPageRequest.of(0, 10));
+
         assertNotNull(result);
         assertEquals(result.size(), 1);
         assertEquals(testItemInfoDto.getId(), result.get(0).getId());
@@ -136,10 +130,10 @@ public class ItemServiceTest {
 
     @Test
     void testDeleteItem() {
-
         Item itemToDelete = itemRepository.findById(testItem.getId()).get();
         itemService.deleteItem(itemToDelete.getId());
         Optional<Item> result = itemRepository.findById(itemToDelete.getId());
+
         assertTrue(result.isEmpty());
     }
 }

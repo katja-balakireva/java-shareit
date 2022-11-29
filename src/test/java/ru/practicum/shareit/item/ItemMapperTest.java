@@ -17,10 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 public class ItemMapperTest {
-
     @Autowired
     private ItemMapper itemMapper;
-
     @Autowired
     private UserRepository userRepository;
     @Autowired

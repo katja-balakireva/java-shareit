@@ -21,11 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 public class ItemRepositoryTest {
-
     @Autowired
     private TestEntityManager em;
     @Autowired
     private ItemRepository itemRepository;
+
     private static final CustomPageRequest REQ = CustomPageRequest.of(0, 10);
 
     private User testOwner;
@@ -56,8 +56,8 @@ public class ItemRepositoryTest {
 
     @Test
     public void testFindAllByRequestId() {
-
         List<Item> result = itemRepository.findAllByRequestId(testRequest.getId());
+
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(testItem.getRequestId(), result.get(0).getRequestId());
@@ -65,17 +65,16 @@ public class ItemRepositoryTest {
 
     @Test
     public void testExistsByOwnerId() {
-
         assertTrue(itemRepository.existsByOwnerId(testOwner.getId()));
     }
 
     @Test
     public void testFindByNameContainsOrDescriptionContainsIgnoreCase() {
-
         Collection<Item> result =
                 itemRepository.findByNameContainsOrDescriptionContainsIgnoreCase(
                         "est", "Descript", REQ);
         List<Item> resultList = new ArrayList<>(result);
+
         assertNotNull(resultList);
         assertEquals(1, resultList.size());
         assertEquals(testItem.getName(), resultList.get(0).getName());
@@ -84,9 +83,9 @@ public class ItemRepositoryTest {
 
     @Test
     public void testFindByOwnerId() {
-
         Collection<Item> result = itemRepository.findByOwnerId(testOwner.getId(), REQ);
         List<Item> resultList = new ArrayList<>(result);
+
         assertNotNull(resultList);
         assertEquals(1, resultList.size());
         assertEquals(testItem.getId(), resultList.get(0).getId());

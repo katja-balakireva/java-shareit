@@ -113,7 +113,6 @@ public class BookingControllerTest {
 
     @Test
     void testGetAllBookingsByUserId() throws Exception {
-
         when(bookingService.getAllByUserId(anyLong(), anyString(), any())).thenReturn(Arrays.asList(testBooking));
 
         mockMvc.perform(get("/bookings")

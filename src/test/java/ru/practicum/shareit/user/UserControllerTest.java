@@ -108,9 +108,7 @@ public class UserControllerTest {
 
     @Test
     void testGetById() throws Exception {
-
         UserDto userToAdd = new UserDto(1L, "name_1", "email_1@test.com");
-
         when(userService.getById(anyLong())).thenReturn(userToAdd);
 
         mockMvc.perform(get("/users/{userId}", userToAdd.getId())

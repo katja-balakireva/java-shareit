@@ -34,7 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ItemController.class)
 @AutoConfigureMockMvc
 public class ItemControllerTest {
-
     @MockBean
     @Qualifier("DefaultItemService")
     private ItemService itemService;
@@ -61,7 +60,6 @@ public class ItemControllerTest {
 
     @Test
     void testAddItem() throws Exception {
-
         when(itemService.addItem(anyLong(), any(ItemDto.class)))
                 .thenReturn(testItemInfoDto);
 
@@ -80,15 +78,12 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.owner.id").value(testItemInfoDto.getOwner().getId()))
                 .andDo(MockMvcResultHandlers.print());
 
-        verify(itemService,
-                times(1)).addItem(anyLong(),
-                any(ItemDto.class));
+        verify(itemService, times(1)).addItem(anyLong(), any(ItemDto.class));
     }
 
     @Test
     void testUpdateItem() throws Exception {
-        when(itemService.addItem(anyLong(), any(ItemDto.class)))
-                .thenReturn(testItemInfoDto);
+        when(itemService.addItem(anyLong(), any(ItemDto.class))).thenReturn(testItemInfoDto);
 
         mockMvc.perform(patch("/items/{itemId}", testItemInfoDto.getId())
                 .header("X-Sharer-User-Id", 1L)
@@ -97,14 +92,12 @@ public class ItemControllerTest {
                 .characterEncoding(StandardCharsets.UTF_8)
                 .accept(MediaType.APPLICATION_JSON));
 
-        verify(itemService, times(1)).updateItem(anyLong(),
-                anyLong(), any(ItemDto.class));
+        verify(itemService, times(1)).updateItem(anyLong(), anyLong(), any(ItemDto.class));
     }
 
     @Test
     void testGetById() throws Exception {
-        when(itemService.getById(anyLong(), anyLong()))
-                .thenReturn(testItemInfoDto);
+        when(itemService.getById(anyLong(), anyLong())).thenReturn(testItemInfoDto);
 
         mockMvc.perform(get("/items/{itemId}", testItemInfoDto.getId())
                         .header("X-Sharer-User-Id", 1L)
@@ -125,8 +118,7 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.comments", hasSize(1)))
                 .andDo(MockMvcResultHandlers.print());
 
-        verify(itemService, times(1)).getById(anyLong(),
-                anyLong());
+        verify(itemService, times(1)).getById(anyLong(), anyLong());
     }
 
     @Test
@@ -159,10 +151,8 @@ public class ItemControllerTest {
 
     @Test
     void testSearchItem() throws Exception {
-
-        when(itemService.searchItem("ItemNameX",
-                CustomPageRequest.of(0, 10))).thenReturn(
-                Arrays.asList(testItemInfoDto));
+        when(itemService.searchItem("ItemNameX", CustomPageRequest.of(0, 10)))
+                .thenReturn(Arrays.asList(testItemInfoDto));
 
         mockMvc.perform(get("/items/search")
                         .param("text", "ItemNameX")

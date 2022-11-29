@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 public class BookingRepositoryTest {
-
     @Autowired
     private TestEntityManager em;
     @Autowired

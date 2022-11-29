@@ -20,7 +20,7 @@ public class ItemRequestMapper {
 
     @Autowired
     public ItemRequestMapper(ItemMapper itemMapper) {
-        this.itemMapper = itemMapper;
+        ItemRequestMapper.itemMapper = itemMapper;
     }
 
     public static ItemRequestInfoDto toItemRequestInfoDto(ItemRequest itemRequest, List<Item> items) {

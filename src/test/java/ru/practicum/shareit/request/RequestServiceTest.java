@@ -58,14 +58,15 @@ public class RequestServiceTest {
     @Test
     void testAddItemRequest() {
         ItemRequestInfoDto result = requestService.addItemRequest(testRequester.getId(), testRequestDto);
+
         assertNotNull(result);
         assertEquals(testRequestInfoDto.getDescription(), result.getDescription());
     }
 
     @Test
     void testGetByRequestId() {
-
         ItemRequestInfoDto result = requestService.getByRequestId(testRequester.getId(), testRequest.getId());
+
         assertNotNull(result);
         assertEquals(testRequestInfoDto.getId(), result.getId());
         assertEquals(testRequestInfoDto.getDescription(), result.getDescription());
@@ -75,7 +76,6 @@ public class RequestServiceTest {
 
     @Test
     void testGetAllByUserId() {
-
         List<ItemRequestInfoDto> result = requestService.getAllByUserId(testRequester.getId(),
                 CustomPageRequest.of(0, 10));
 

@@ -78,7 +78,6 @@ public class BookingServiceTest {
 
     @Test
     void testUpdateBooking() {
-
         Booking waitingBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.WAITING);
         Booking approvedBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.APPROVED);
         when(bookingRepository.save(any())).thenReturn(waitingBooking);
@@ -99,7 +98,6 @@ public class BookingServiceTest {
 
     @Test
     void testGetById() {
-
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(testBooking));
 
         BookingInfoDto bookingToGet = BookingMapper.toBookingInfoDto(testBooking);
@@ -117,7 +115,6 @@ public class BookingServiceTest {
 
     @Test
     void testGetAllByUserId() {
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testBooker));
         Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 

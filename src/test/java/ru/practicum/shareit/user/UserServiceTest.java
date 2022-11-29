@@ -75,7 +75,6 @@ public class UserServiceTest {
     @Test
     void testGetAll() {
         when(userRepository.findAll()).thenReturn(List.of(testUser));
-
         List<UserDto> result = userService.getAll();
 
         assertNotNull(result);

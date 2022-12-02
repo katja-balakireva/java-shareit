@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.State;
+import ru.practicum.shareit.custom.CustomBadRequestException;
 import ru.practicum.shareit.custom.CustomPageRequest;
 import ru.practicum.shareit.custom.ItemNotFoundException;
 import ru.practicum.shareit.custom.UserNotFoundException;
@@ -42,6 +45,8 @@ public class ItemServiceTest {
     private ItemRequestRepository requestRepository;
     @Autowired
     private ItemMapper itemMapper;
+    @Autowired
+    private CommentMapper commentMapper;
 
     private User testUser;
     private User testBooker;
@@ -49,6 +54,8 @@ public class ItemServiceTest {
     private ItemDto testItemDto;
     private ItemInfoDto testItemInfoDto;
     private ItemRequest testRequest;
+    private Booking testBooking;
+    private Comment testComment;
 
     @BeforeEach
     void setUp() {
@@ -62,6 +69,10 @@ public class ItemServiceTest {
         itemMapper = new ItemMapper(userRepository, bookingRepository, commentRepository, new CommentMapper());
         testItemDto = itemMapper.toItemDto(testItem);
         testItemInfoDto = itemMapper.toItemInfoDto(testItem);
+        testBooking = bookingRepository.save(new Booking(1L, LocalDateTime.now().plusMonths(1),
+                LocalDateTime.now().plusMonths(4), testItem, testBooker, State.APPROVED));
+        testComment = commentRepository.save(new Comment(1L, "TestText", testItem.getId(), testBooker,
+                LocalDateTime.now()));
     }
 
     @Test
@@ -144,6 +155,16 @@ public class ItemServiceTest {
 
         assertThrows(UserNotFoundException.class, () -> itemService.getAll(99L, CustomPageRequest
                 .of(0, 10)));
+    }
+
+    @Test
+    void testAddCommentError() {
+        assertThrows(CustomBadRequestException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
+                testUser.getId(), testItem.getId()));
+        assertThrows(ItemNotFoundException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
+                testUser.getId(), 99L));
+        assertThrows(UserNotFoundException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
+                99L, testItem.getId()));
     }
 
     @Test

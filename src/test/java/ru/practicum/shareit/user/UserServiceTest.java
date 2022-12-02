@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.custom.UserNotFoundException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,8 +64,6 @@ public class UserServiceTest {
         assertEquals(userToUpdate.getId(), result.getId());
         assertEquals(userToUpdate.getName(), result.getName());
         assertEquals(userToUpdate.getEmail(), result.getEmail());
-
-
     }
 
     @Test
@@ -81,6 +80,7 @@ public class UserServiceTest {
 
     @Test
     void testGetAll() {
+        assertEquals(Collections.emptyList(), userService.getAll());
         when(userRepository.findAll()).thenReturn(List.of(testUser));
         List<UserDto> result = userService.getAll();
 
@@ -90,6 +90,7 @@ public class UserServiceTest {
 
     @Test
     void testDelete() {
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(testUser.getId()));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         userService.deleteUser(testUser.getId());
         verify(userRepository, times(1)).deleteById(anyLong());

@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.custom.CustomPageRequest;
+import ru.practicum.shareit.custom.ItemNotFoundException;
+import ru.practicum.shareit.custom.UserNotFoundException;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
@@ -19,6 +21,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
@@ -71,6 +74,8 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.getOwner().getId());
+
+        assertThrows(UserNotFoundException.class, () -> itemService.addItem(99L, testItemDto));
     }
 
     @Test
@@ -87,6 +92,13 @@ public class ItemServiceTest {
         assertEquals(fromStorage.getDescription(), result.getDescription());
         assertEquals(fromStorage.getAvailable(), result.getAvailable());
         assertEquals(fromStorage.getOwner().getId(), result.getOwner().getId());
+
+        assertThrows(UserNotFoundException.class, () -> itemService.updateItem(99L, testItem.getId(),
+                itemToUpdate));
+        assertThrows(UserNotFoundException.class, () -> itemService.updateItem(null, testItem.getId(),
+                itemToUpdate));
+        assertThrows(ItemNotFoundException.class, () -> itemService.updateItem(testUser.getId(), 99L,
+                itemToUpdate));
     }
 
     @Test
@@ -99,7 +111,6 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.get(0).getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.get(0).getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.get(0).getOwner().getId());
-
     }
 
     @Test
@@ -112,6 +123,10 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.getOwner().getId());
+
+        assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), 99L));
+        assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), null));
+        assertThrows(ItemNotFoundException.class, () -> itemService.getById(99L, testUser.getId()));
 
     }
 
@@ -126,6 +141,9 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.get(0).getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.get(0).getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.get(0).getOwner().getId());
+
+        assertThrows(UserNotFoundException.class, () -> itemService.getAll(99L, CustomPageRequest
+                .of(0, 10)));
     }
 
     @Test
@@ -135,5 +153,6 @@ public class ItemServiceTest {
         Optional<Item> result = itemRepository.findById(itemToDelete.getId());
 
         assertTrue(result.isEmpty());
+        assertThrows(ItemNotFoundException.class, () -> itemService.deleteItem(99L));
     }
 }

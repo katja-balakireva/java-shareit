@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.custom.CustomPageRequest;
+import ru.practicum.shareit.custom.RequestNotFoundException;
+import ru.practicum.shareit.custom.UserNotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemDto;
 import ru.practicum.shareit.item.ItemMapper;
@@ -21,6 +23,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
@@ -38,6 +41,8 @@ public class RequestServiceTest {
     private UserRepository userRepository;
     @Autowired
     private ItemMapper itemMapper;
+
+    private static final CustomPageRequest REQ = CustomPageRequest.of(0, 10);
 
     private User testOwner;
     private User testRequester;
@@ -68,6 +73,8 @@ public class RequestServiceTest {
 
         assertNotNull(result);
         assertEquals(testRequestInfoDto.getDescription(), result.getDescription());
+        assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(-99L, testRequestDto));
+        assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(99L, testRequestDto));
     }
 
     @Test
@@ -79,12 +86,16 @@ public class RequestServiceTest {
         assertEquals(testRequestInfoDto.getDescription(), result.getDescription());
         assertEquals(testRequestInfoDto.getCreated(), result.getCreated());
         assertEquals(testRequestInfoDto.getItems().size(), result.getItems().size());
+
+        assertThrows(UserNotFoundException.class, () -> requestService.getByRequestId(-99L, testRequest.getId()));
+        assertThrows(UserNotFoundException.class, () -> requestService.getByRequestId(99L, testRequest.getId()));
+        assertThrows(RequestNotFoundException.class, () -> requestService.getByRequestId(testRequester.getId(),
+                99L));
     }
 
     @Test
     void testGetAllByUserId() {
-        List<ItemRequestInfoDto> result = requestService.getAllByUserId(testRequester.getId(),
-                CustomPageRequest.of(0, 10));
+        List<ItemRequestInfoDto> result = requestService.getAllByUserId(testRequester.getId(), REQ);
 
         assertNotNull(result);
         assertEquals(result.size(), 1);
@@ -92,15 +103,19 @@ public class RequestServiceTest {
         assertEquals(testRequestInfoDto.getDescription(), result.get(0).getDescription());
         assertEquals(testRequestInfoDto.getCreated(), result.get(0).getCreated());
         assertEquals(testRequestInfoDto.getItems().size(), result.get(0).getItems().size());
+
+        assertThrows(UserNotFoundException.class, () -> requestService.getAllByUserId(99L, REQ));
     }
 
     @Test
     void testGetAllRequestsNotOwner() {
         //all requests except user's
-        List<ItemRequestInfoDto> result = requestService.getAllRequestsNotOwner(testRequester.getId(),
-                CustomPageRequest.of(0, 10));
+        List<ItemRequestInfoDto> result = requestService.getAllRequestsNotOwner(testRequester.getId(), REQ);
 
         assertTrue(result.isEmpty());
         assertEquals(result.size(), 0);
+
+        assertThrows(UserNotFoundException.class, () -> requestService.getAllRequestsNotOwner(-99L, REQ));
+        assertThrows(UserNotFoundException.class, () -> requestService.getAllRequestsNotOwner(99L, REQ));
     }
 }

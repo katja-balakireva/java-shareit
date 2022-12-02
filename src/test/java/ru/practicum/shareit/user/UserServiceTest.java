@@ -6,12 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.shareit.custom.UserNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -49,6 +51,8 @@ public class UserServiceTest {
 
     @Test
     void testUpdateUser() {
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(updatedTestUser.getId(),
+                UserMapper.toUserDto(testUser)));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenReturn(updatedTestUser);
 
@@ -59,10 +63,13 @@ public class UserServiceTest {
         assertEquals(userToUpdate.getId(), result.getId());
         assertEquals(userToUpdate.getName(), result.getName());
         assertEquals(userToUpdate.getEmail(), result.getEmail());
+
+
     }
 
     @Test
     void testGetById() {
+        assertThrows(UserNotFoundException.class, () -> userService.getById(testUser.getId()));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         UserDto result = userService.getById(testUser.getId());
 

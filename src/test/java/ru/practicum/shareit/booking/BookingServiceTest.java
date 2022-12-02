@@ -1,14 +1,19 @@
 package ru.practicum.shareit.booking;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.custom.BookingNotFoundException;
+import ru.practicum.shareit.custom.CustomBadRequestException;
 import ru.practicum.shareit.custom.CustomPageRequest;
+import ru.practicum.shareit.custom.ItemNotFoundException;
 import ru.practicum.shareit.custom.UnsupportedStateException;
+import ru.practicum.shareit.custom.UserNotFoundException;
+import ru.practicum.shareit.custom.ValidateBookingOwnershipException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
@@ -49,6 +54,11 @@ public class BookingServiceTest {
     private static Item testItem;
     private static Booking testBooking;
 
+    private User testErrorOwner;
+    private User testErrorBooker;
+    private Item testErrorItem;
+    private Booking testErrorBooking;
+
     @BeforeAll
     static void setUp() {
         testOwner = new User(1L, "name_1", "email_1@test.com");
@@ -56,6 +66,15 @@ public class BookingServiceTest {
         testItem = new Item(1L, "TestItem", "TestDescription",
                 true, testOwner, null, null);
         testBooking = new Booking(1L, START, END, testItem, testBooker, State.WAITING);
+    }
+
+    @BeforeEach
+    void setUpForValidation() {
+        testErrorOwner = new User(3L, "name_1X", "email_1X@test.com");
+        testErrorBooker = new User(4L, "name_X", "email_X@test.com");
+        testErrorItem = new Item(4L, "TestItemX", "TestDescriptionX",
+                true, testErrorOwner, null, null);
+        testErrorBooking = new Booking(3L, START, END, testErrorItem, testErrorBooker, State.WAITING);
     }
 
     @Test
@@ -74,10 +93,34 @@ public class BookingServiceTest {
         assertEquals(bookingToAdd.getItem().getId(), result.getItem().getId());
         assertEquals(bookingToAdd.getBooker().getId(), result.getBooker().getId());
         assertEquals(bookingToAdd.getStatus().toString(), result.getStatus().toString());
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testOwner));
+        assertThrows(ValidateBookingOwnershipException.class, () -> bookingService.addBooking(testOwner.getId(),
+                BookingMapper.toBookingDto(testBooking)));
+    }
+
+    @Test
+    void testAddBookingValidation() {
+        testErrorItem.setAvailable(false);
+        assertThrows(ItemNotFoundException.class, () -> bookingService.addBooking(testErrorBooker.getId(),
+                BookingMapper.toBookingDto(testErrorBooking)));
+        testErrorItem.setAvailable(true);
+
+        testErrorItem.setId(99L);
+        assertThrows(ItemNotFoundException.class, () -> bookingService.addBooking(testErrorBooker.getId(),
+                BookingMapper.toBookingDto(testErrorBooking)));
+
+        testErrorBooking.setEnd(START);
+        testErrorBooking.setStart(END);
+        assertThrows(CustomBadRequestException.class, () -> bookingService.addBooking(testErrorBooker.getId(),
+                BookingMapper.toBookingDto(testErrorBooking)));
     }
 
     @Test
     void testUpdateBooking() {
+        assertThrows(BookingNotFoundException.class, () -> bookingService.updateBooking(testErrorOwner.getId(),
+                testErrorBooking.getId(), true));
+
         Booking waitingBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.WAITING);
         Booking approvedBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.APPROVED);
         when(bookingRepository.save(any())).thenReturn(waitingBooking);
@@ -97,7 +140,26 @@ public class BookingServiceTest {
     }
 
     @Test
+    void testUpdateBookingValidation() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(testErrorBooking));
+
+        assertThrows(BookingNotFoundException.class, () -> bookingService.updateBooking(99L,
+                testErrorBooking.getId(), true));
+
+        testErrorBooking.setStatus(State.APPROVED);
+        assertThrows(CustomBadRequestException.class, () -> bookingService.updateBooking(testErrorOwner.getId(),
+                testErrorBooking.getId(), true));
+
+        testErrorBooking.setStatus(State.REJECTED);
+        assertThrows(CustomBadRequestException.class, () -> bookingService.updateBooking(testErrorOwner.getId(),
+                testErrorBooking.getId(), true));
+    }
+
+    @Test
     void testGetById() {
+        assertThrows(BookingNotFoundException.class, () -> bookingService.getById(testBooking.getId(),
+                testBooker.getId()));
+
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(testBooking));
 
         BookingInfoDto bookingToGet = BookingMapper.toBookingInfoDto(testBooking);
@@ -115,6 +177,9 @@ public class BookingServiceTest {
 
     @Test
     void testGetAllByUserId() {
+        assertThrows(UserNotFoundException.class, () -> bookingService.getAllByUserId(99L,
+                "FUTURE", CustomPageRequest.of(0, 10)));
+
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testBooker));
         Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
@@ -150,6 +215,9 @@ public class BookingServiceTest {
 
     @Test
     void testGetAllByOwnerId() {
+        assertThrows(ItemNotFoundException.class, () -> bookingService.getAllByOwnerId(99L,
+                "CURRENT", CustomPageRequest.of(0, 10)));
+
         when(itemRepository.existsByOwnerId(testOwner.getId())).thenReturn(true);
 
         Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));

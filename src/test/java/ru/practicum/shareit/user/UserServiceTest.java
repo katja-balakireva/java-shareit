@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-//import ru.practicum.shareit.custom.DuplicateEmailException;
 import ru.practicum.shareit.custom.UserNotFoundException;
 
 import java.util.Collections;
@@ -51,9 +50,13 @@ public class UserServiceTest {
     }
 
     @Test
-    void testUpdateUser() {
+    void testUpdateUserThrowsNotFoundUser() {
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(updatedTestUser.getId(),
                 UserMapper.toUserDto(testUser)));
+    }
+
+    @Test
+    void testUpdateUser() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenReturn(updatedTestUser);
 
@@ -67,8 +70,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void testGetById() {
+    void testGetByIdThrowsNotFoundUser() {
         assertThrows(UserNotFoundException.class, () -> userService.getById(testUser.getId()));
+    }
+
+    @Test
+    void testGetById() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         UserDto result = userService.getById(testUser.getId());
 
@@ -79,8 +86,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void testGetAll() {
+    void testGetAllEmptyList() {
         assertEquals(Collections.emptyList(), userService.getAll());
+    }
+
+    @Test
+    void testGetAll() {
         when(userRepository.findAll()).thenReturn(List.of(testUser));
         List<UserDto> result = userService.getAll();
 
@@ -89,8 +100,12 @@ public class UserServiceTest {
     }
 
     @Test
-    void testDelete() {
+    void testDeleteThrowsNotFoundUser() {
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(testUser.getId()));
+    }
+
+    @Test
+    void testDelete() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         userService.deleteUser(testUser.getId());
         verify(userRepository, times(1)).deleteById(anyLong());

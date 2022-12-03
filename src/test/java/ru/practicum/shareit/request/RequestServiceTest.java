@@ -73,6 +73,10 @@ public class RequestServiceTest {
 
         assertNotNull(result);
         assertEquals(testRequestInfoDto.getDescription(), result.getDescription());
+    }
+
+    @Test
+    void testAddItemRequestFailedValidations() {
         assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(-99L, testRequestDto));
         assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(99L, testRequestDto));
     }
@@ -85,9 +89,15 @@ public class RequestServiceTest {
         assertNotNull(result);
         assertEquals(anotherTestDto.getDescription(), result.getDescription());
         assertTrue(result.getItems().isEmpty());
+    }
+
+    @Test
+    void testAddItemRequestNoItemsFailedValidations() {
+        ItemRequestDto anotherTestDto = new ItemRequestDto("Description_2");
         assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(-99L, anotherTestDto));
         assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(99L, anotherTestDto));
     }
+
 
     @Test
     void testGetByRequestId() {
@@ -104,7 +114,10 @@ public class RequestServiceTest {
         assertEquals(testItem.getAvailable(), result.getItems().get(0).getAvailable());
         assertEquals(testItem.getDescription(), result.getItems().get(0).getDescription());
         assertEquals(testItem.getRequestId(), result.getItems().get(0).getRequestId());
+    }
 
+    @Test
+    void testGetByRequestIdFailedValidations() {
         assertThrows(UserNotFoundException.class, () -> requestService.getByRequestId(-99L, testRequest.getId()));
         assertThrows(UserNotFoundException.class, () -> requestService.getByRequestId(99L, testRequest.getId()));
         assertThrows(RequestNotFoundException.class, () -> requestService.getByRequestId(testRequester.getId(),
@@ -121,7 +134,10 @@ public class RequestServiceTest {
         assertEquals(testRequestInfoDto.getDescription(), result.get(0).getDescription());
         assertEquals(testRequestInfoDto.getCreated(), result.get(0).getCreated());
         assertEquals(testRequestInfoDto.getItems().size(), result.get(0).getItems().size());
+    }
 
+    @Test
+    void testGetAllByUserIdThrowsNotFoundUser() {
         assertThrows(UserNotFoundException.class, () -> requestService.getAllByUserId(99L, REQ));
     }
 
@@ -132,7 +148,10 @@ public class RequestServiceTest {
 
         assertTrue(result.isEmpty());
         assertEquals(result.size(), 0);
+    }
 
+    @Test
+    void testGetAllRequestsNotOwnerFailedValidations() {
         assertThrows(UserNotFoundException.class, () -> requestService.getAllRequestsNotOwner(-99L, REQ));
         assertThrows(UserNotFoundException.class, () -> requestService.getAllRequestsNotOwner(99L, REQ));
     }

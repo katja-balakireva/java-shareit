@@ -48,6 +48,7 @@ public class BookingServiceTest {
             1, 24, 8, 30, 10);
     private static final LocalDateTime END = LocalDateTime.of(2023,
             5, 24, 8, 30, 10);
+    private static final CustomPageRequest REQ = CustomPageRequest.of(0, 10);
 
     private static User testOwner;
     private static User testBooker;
@@ -93,23 +94,34 @@ public class BookingServiceTest {
         assertEquals(bookingToAdd.getItem().getId(), result.getItem().getId());
         assertEquals(bookingToAdd.getBooker().getId(), result.getBooker().getId());
         assertEquals(bookingToAdd.getStatus().toString(), result.getStatus().toString());
+    }
 
+    @Test
+    void testAddBookingThrowsOwnershipException() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(testItem));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testOwner));
+
         assertThrows(ValidateBookingOwnershipException.class, () -> bookingService.addBooking(testOwner.getId(),
                 BookingMapper.toBookingDto(testBooking)));
     }
 
     @Test
-    void testAddBookingValidation() {
+    void testAddBookingValidationOfAvailable() {
         testErrorItem.setAvailable(false);
         assertThrows(ItemNotFoundException.class, () -> bookingService.addBooking(testErrorBooker.getId(),
                 BookingMapper.toBookingDto(testErrorBooking)));
         testErrorItem.setAvailable(true);
+    }
 
+    @Test
+    void testAddBookingValidationOfId() {
         testErrorItem.setId(99L);
         assertThrows(ItemNotFoundException.class, () -> bookingService.addBooking(testErrorBooker.getId(),
                 BookingMapper.toBookingDto(testErrorBooking)));
+    }
 
+    @Test
+    void testAddBookingValidationOfStartAndEnd() {
         testErrorBooking.setEnd(START);
         testErrorBooking.setStart(END);
         assertThrows(CustomBadRequestException.class, () -> bookingService.addBooking(testErrorBooker.getId(),
@@ -118,11 +130,10 @@ public class BookingServiceTest {
 
     @Test
     void testUpdateBooking() {
-        assertThrows(BookingNotFoundException.class, () -> bookingService.updateBooking(testErrorOwner.getId(),
-                testErrorBooking.getId(), true));
-
-        Booking waitingBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.WAITING);
-        Booking approvedBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker, State.APPROVED);
+        Booking waitingBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker,
+                State.WAITING);
+        Booking approvedBooking = new Booking(2L, START.plusMonths(1), END.plusMonths(2), testItem, testBooker,
+                State.APPROVED);
         when(bookingRepository.save(any())).thenReturn(waitingBooking);
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(waitingBooking));
         when(bookingRepository.save(any())).thenReturn(approvedBooking);
@@ -140,30 +151,47 @@ public class BookingServiceTest {
     }
 
     @Test
-    void testUpdateBookingValidation() {
+    void testUpdateBookingThrowsNotFoundException() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(testErrorBooking));
 
         assertThrows(BookingNotFoundException.class, () -> bookingService.updateBooking(99L,
                 testErrorBooking.getId(), true));
+    }
 
+    @Test
+    void testUpdateBookingValidationExceptionWhenApprovedState() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(testErrorBooking));
         testErrorBooking.setStatus(State.APPROVED);
         assertThrows(CustomBadRequestException.class, () -> bookingService.updateBooking(testErrorOwner.getId(),
                 testErrorBooking.getId(), true));
+    }
 
+    @Test
+    void testUpdateBookingValidationExceptionWhenRejectedState() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(testErrorBooking));
         testErrorBooking.setStatus(State.REJECTED);
         assertThrows(CustomBadRequestException.class, () -> bookingService.updateBooking(testErrorOwner.getId(),
                 testErrorBooking.getId(), true));
     }
 
     @Test
-    void testGetById() {
+    void testGetByIdThrowsExceptionWhenNotFoundBooking() {
         assertThrows(BookingNotFoundException.class, () -> bookingService.getById(testBooking.getId(),
                 testBooker.getId()));
+    }
 
+    @Test
+    void testGetByIdThrowsExceptionWhenNotFoundUser() {
+        assertThrows(BookingNotFoundException.class, () -> bookingService.getById(testBooking.getId(), 99L));
+    }
+
+    @Test
+    void testGetById() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(testBooking));
 
         BookingInfoDto bookingToGet = BookingMapper.toBookingInfoDto(testBooking);
         BookingInfoDto result = bookingService.getById(testBooking.getId(), testBooker.getId());
+
         assertNotNull(result);
         assertEquals(bookingToGet.getId(), result.getId());
         assertEquals(bookingToGet.getStart(), result.getStart());
@@ -171,84 +199,128 @@ public class BookingServiceTest {
         assertEquals(bookingToGet.getItem().getId(), result.getItem().getId());
         assertEquals(bookingToGet.getBooker().getId(), result.getBooker().getId());
         assertEquals(bookingToGet.getStatus().toString(), result.getStatus().toString());
-
-        assertThrows(BookingNotFoundException.class, () -> bookingService.getById(testBooking.getId(), 99L));
     }
 
     @Test
-    void testGetAllByUserId() {
-        assertThrows(UserNotFoundException.class, () -> bookingService.getAllByUserId(99L,
-                "FUTURE", CustomPageRequest.of(0, 10)));
+    void testGetAllByUserIdThrowsNotFoundUser() {
+        assertThrows(UserNotFoundException.class, () -> bookingService.getAllByUserId(99L, "FUTURE", REQ));
+    }
 
+    @Test
+    void testGetAllByUserIdThrowsUnsupportedState() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testOwner));
+        assertThrows(UnsupportedStateException.class, () -> bookingService.getAllByUserId(testOwner.getId(),
+                "hello", REQ));
+    }
+
+    @Test
+    void testGetAllByUserIdCurrent() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testBooker));
         Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
         when(bookingRepository.getAllByBookerId(anyLong(), any(), any())).thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultCurrent = bookingService.getAllByUserId(testOwner.getId(), "CURRENT",
-                CustomPageRequest.of(0, 10));
+                REQ);
         assertNotNull(resultCurrent);
         assertEquals(allBookings, resultCurrent);
-
-        when(bookingRepository.findAllByBookerIdOrderByStartDesc(anyLong(), any())).thenReturn(List.of(testBooking));
-        Collection<BookingInfoDto> resultAll = bookingService.getAllByUserId(testOwner.getId(), "ALL",
-                CustomPageRequest.of(0, 10));
-        assertNotNull(resultAll);
-        assertEquals(allBookings, resultAll);
-
-        when(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(anyLong(), any(), any()))
-                .thenReturn(List.of(testBooking));
-        Collection<BookingInfoDto> resultFuture = bookingService.getAllByUserId(testOwner.getId(), "FUTURE",
-                CustomPageRequest.of(0, 10));
-        assertNotNull(resultFuture);
-        assertEquals(allBookings, resultFuture);
-
-        when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(), any(), any()))
-                .thenReturn(List.of(testBooking));
-        Collection<BookingInfoDto> resultPast = bookingService.getAllByUserId(testOwner.getId(), "PAST",
-                CustomPageRequest.of(0, 10));
-        assertNotNull(resultPast);
-        assertEquals(allBookings, resultPast);
-
-        assertThrows(UnsupportedStateException.class, () -> bookingService.getAllByUserId(testOwner.getId(),
-                "hello", CustomPageRequest.of(0, 10)));
     }
 
     @Test
-    void testGetAllByOwnerId() {
-        assertThrows(ItemNotFoundException.class, () -> bookingService.getAllByOwnerId(99L,
-                "CURRENT", CustomPageRequest.of(0, 10)));
+    void testGetAllByUserIdAll() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testBooker));
+        Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
+        when(bookingRepository.findAllByBookerIdOrderByStartDesc(anyLong(), any())).thenReturn(List.of(testBooking));
+        Collection<BookingInfoDto> resultAll = bookingService.getAllByUserId(testOwner.getId(), "ALL", REQ);
+        assertNotNull(resultAll);
+        assertEquals(allBookings, resultAll);
+    }
+
+    @Test
+    void testGetAllByUserIdFuture() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testBooker));
+        Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
+
+        when(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(List.of(testBooking));
+        Collection<BookingInfoDto> resultFuture = bookingService.getAllByUserId(testOwner.getId(), "FUTURE", REQ);
+        assertNotNull(resultFuture);
+        assertEquals(allBookings, resultFuture);
+    }
+
+    @Test
+    void testGetAllByUserIdPast() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testBooker));
+        Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
+
+        when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(List.of(testBooking));
+        Collection<BookingInfoDto> resultPast = bookingService.getAllByUserId(testOwner.getId(), "PAST", REQ);
+        assertNotNull(resultPast);
+        assertEquals(allBookings, resultPast);
+    }
+
+    @Test
+    void testGetAllByOwnerIdThrowsNotFoundItem() {
+        assertThrows(ItemNotFoundException.class, () -> bookingService.getAllByOwnerId(99L, "CURRENT",
+                REQ));
+    }
+
+    @Test
+    void testGetAllByOwnerIdThrowsUnsupportedState() {
+        when(itemRepository.existsByOwnerId(testOwner.getId())).thenReturn(true);
+        assertThrows(UnsupportedStateException.class, () -> bookingService.getAllByOwnerId(testOwner.getId(),
+                "goodbye", REQ));
+    }
+
+    @Test
+    void testGetAllByOwnerIdCurrent() {
         when(itemRepository.existsByOwnerId(testOwner.getId())).thenReturn(true);
 
         Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
         when(bookingRepository.getCurrentBookingsByOwnerId(anyLong(), any(), any())).thenReturn(List.of(testBooking));
         Collection<BookingInfoDto> resultCurrent = bookingService.getAllByOwnerId(testOwner.getId(), "CURRENT",
-                CustomPageRequest.of(0, 10));
+                REQ);
         assertNotNull(resultCurrent);
         assertEquals(allBookings, resultCurrent);
+    }
+
+    @Test
+    void testGetAllByOwnerIdAll() {
+        when(itemRepository.existsByOwnerId(testOwner.getId())).thenReturn(true);
+
+        Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
         when(bookingRepository.findAllByOwnerId(anyLong(), any())).thenReturn(List.of(testBooking));
-        Collection<BookingInfoDto> resultAll = bookingService.getAllByOwnerId(testOwner.getId(), "ALL",
-                CustomPageRequest.of(0, 10));
+        Collection<BookingInfoDto> resultAll = bookingService.getAllByOwnerId(testOwner.getId(), "ALL", REQ);
         assertNotNull(resultAll);
         assertEquals(allBookings, resultAll);
+    }
+
+    @Test
+    void testGetAllByOwnerIdFuture() {
+        when(itemRepository.existsByOwnerId(testOwner.getId())).thenReturn(true);
+
+        Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
         when(bookingRepository.getFutureBookingsByOwnerId(anyLong(), any(), any()))
                 .thenReturn(List.of(testBooking));
-        Collection<BookingInfoDto> resultFuture = bookingService.getAllByOwnerId(testOwner.getId(), "FUTURE",
-                CustomPageRequest.of(0, 10));
+        Collection<BookingInfoDto> resultFuture = bookingService.getAllByOwnerId(testOwner.getId(), "FUTURE", REQ);
         assertNotNull(resultFuture);
         assertEquals(allBookings, resultFuture);
+    }
+
+    @Test
+    void testGetAllByOwnerIdPast() {
+        when(itemRepository.existsByOwnerId(testOwner.getId())).thenReturn(true);
+
+        Collection<BookingInfoDto> allBookings = List.of(BookingMapper.toBookingInfoDto(testBooking));
 
         when(bookingRepository.getPastBookingsByOwnerId(anyLong(), any(), any()))
                 .thenReturn(List.of(testBooking));
-        Collection<BookingInfoDto> resultPast = bookingService.getAllByOwnerId(testOwner.getId(), "PAST",
-                CustomPageRequest.of(0, 10));
+        Collection<BookingInfoDto> resultPast = bookingService.getAllByOwnerId(testOwner.getId(), "PAST", REQ);
         assertNotNull(resultPast);
         assertEquals(allBookings, resultPast);
-
-        assertThrows(UnsupportedStateException.class, () -> bookingService.getAllByOwnerId(testOwner.getId(),
-                "goodbye", CustomPageRequest.of(0, 10)));
     }
 }

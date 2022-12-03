@@ -30,7 +30,7 @@ public class BookingMapper {
         User booker = getBooker(bookerId);
 
         return Booking.builder()
-                .id(bookingDto.getId()) //?
+                .id(bookingDto.getId())
                 .start(bookingDto.getStart())
                 .end(bookingDto.getEnd())
                 .item(item)

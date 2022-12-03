@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class BookingMapperTest {
 
     @Autowired
-    BookingMapper bookingMapper;
+    private BookingMapper bookingMapper;
     @Autowired
     private UserRepository userRepository;
     @Autowired

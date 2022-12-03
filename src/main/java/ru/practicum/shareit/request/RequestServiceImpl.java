@@ -116,7 +116,7 @@ public class RequestServiceImpl implements RequestService {
 
     private void validateUserId(Long userId) {
         if (userId <= 0) {
-            log.warn("id пользователя не может быть отрицательным: {}", userId);
+            log.warn("id пользователя не может быть отрицательным или нулевым: {}", userId);
             throw new UserNotFoundException("Некорректный id пользователя");
         }
     }

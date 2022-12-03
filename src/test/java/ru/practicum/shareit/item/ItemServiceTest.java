@@ -49,6 +49,7 @@ public class ItemServiceTest {
     private ItemMapper itemMapper;
     @Autowired
     private CommentMapper commentMapper;
+    private static final CustomPageRequest REQ = CustomPageRequest.of(0, 10);
 
     private User testUser;
     private User testBooker;
@@ -92,7 +93,10 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getRequestId(), result.getRequestId());
         assertEquals(resultBooking, result.getNextBooking());
         assertNull(result.getLastBooking());
+    }
 
+    @Test
+    void testAddItemThrowsNotFoundUser() {
         assertThrows(UserNotFoundException.class, () -> itemService.addItem(99L, testItemDto));
     }
 
@@ -111,8 +115,6 @@ public class ItemServiceTest {
         assertNull(result.getRequestId());
         assertNull(result.getNextBooking());
         assertNull(result.getLastBooking());
-
-        assertThrows(UserNotFoundException.class, () -> itemService.addItem(99L, testItemDto));
     }
 
     @Test
@@ -133,6 +135,12 @@ public class ItemServiceTest {
         assertEquals(fromStorage.getOwner().getId(), result.getOwner().getId());
         assertEquals(resultBooking, result.getNextBooking());
         assertNull(result.getLastBooking());
+    }
+
+    @Test
+    void testUpdateItemFailedValidatons() {
+        ItemDto itemToUpdate = new ItemDto(1L, null, "TestName_Upd", "TestDescription_Upd",
+                false);
 
         assertThrows(UserNotFoundException.class, () -> itemService.updateItem(99L, testItem.getId(),
                 itemToUpdate));
@@ -182,7 +190,7 @@ public class ItemServiceTest {
 
     @Test
     void testSearchItem() {
-        List<ItemInfoDto> result = itemService.searchItem("TestItem", CustomPageRequest.of(0, 10));
+        List<ItemInfoDto> result = itemService.searchItem("TestItem", REQ);
         ItemInfoDto.ItemBookingDto resultBooking = new ItemInfoDto.ItemBookingDto(testBooking.getId(),
                 testBooker.getId());
 
@@ -199,7 +207,7 @@ public class ItemServiceTest {
     @Test
     void testSearchItemEmpty() {
         String searchText = "";
-        List<ItemInfoDto> result = itemService.searchItem(searchText, CustomPageRequest.of(0, 10));
+        List<ItemInfoDto> result = itemService.searchItem(searchText, REQ);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -215,7 +223,10 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.getOwner().getId());
+    }
 
+    @Test
+    void testGetByIdFailedValidations() {
         assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), 99L));
         assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), null));
         assertThrows(ItemNotFoundException.class, () -> itemService.getById(99L, testUser.getId()));
@@ -236,7 +247,7 @@ public class ItemServiceTest {
 
     @Test
     void testGetAll() {
-        List<ItemInfoDto> result = itemService.getAll(testUser.getId(), CustomPageRequest.of(0, 10));
+        List<ItemInfoDto> result = itemService.getAll(testUser.getId(), REQ);
 
         assertNotNull(result);
         assertEquals(result.size(), 1);
@@ -245,13 +256,15 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.get(0).getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.get(0).getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.get(0).getOwner().getId());
-
-        assertThrows(UserNotFoundException.class, () -> itemService.getAll(99L, CustomPageRequest
-                .of(0, 10)));
     }
 
     @Test
-    void testAddCommentError() {
+    void testGetAllThrowsNotFoundUser() {
+        assertThrows(UserNotFoundException.class, () -> itemService.getAll(99L, REQ));
+    }
+
+    @Test
+    void testAddCommentFailedValidations() {
         assertThrows(CustomBadRequestException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
                 testUser.getId(), testItem.getId()));
         assertThrows(ItemNotFoundException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
@@ -261,12 +274,16 @@ public class ItemServiceTest {
     }
 
     @Test
+    void testDeleteItemThrowsNotFoundItem() {
+        assertThrows(ItemNotFoundException.class, () -> itemService.deleteItem(99L));
+    }
+
+    @Test
     void testDeleteItem() {
         Item itemToDelete = itemRepository.findById(testItem.getId()).get();
         itemService.deleteItem(itemToDelete.getId());
         Optional<Item> result = itemRepository.findById(itemToDelete.getId());
 
         assertTrue(result.isEmpty());
-        assertThrows(ItemNotFoundException.class, () -> itemService.deleteItem(99L));
     }
 }

@@ -78,6 +78,18 @@ public class RequestServiceTest {
     }
 
     @Test
+    void testAddItemRequestNoItems() {
+        ItemRequestDto anotherTestDto = new ItemRequestDto("Description_2");
+        ItemRequestInfoDto result = requestService.addItemRequest(testRequester.getId(), anotherTestDto);
+
+        assertNotNull(result);
+        assertEquals(anotherTestDto.getDescription(), result.getDescription());
+        assertTrue(result.getItems().isEmpty());
+        assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(-99L, anotherTestDto));
+        assertThrows(UserNotFoundException.class, () -> requestService.addItemRequest(99L, anotherTestDto));
+    }
+
+    @Test
     void testGetByRequestId() {
         ItemRequestInfoDto result = requestService.getByRequestId(testRequester.getId(), testRequest.getId());
 
@@ -86,6 +98,12 @@ public class RequestServiceTest {
         assertEquals(testRequestInfoDto.getDescription(), result.getDescription());
         assertEquals(testRequestInfoDto.getCreated(), result.getCreated());
         assertEquals(testRequestInfoDto.getItems().size(), result.getItems().size());
+
+        assertEquals(testItem.getId(), result.getItems().get(0).getId());
+        assertEquals(testItem.getName(), result.getItems().get(0).getName());
+        assertEquals(testItem.getAvailable(), result.getItems().get(0).getAvailable());
+        assertEquals(testItem.getDescription(), result.getItems().get(0).getDescription());
+        assertEquals(testItem.getRequestId(), result.getItems().get(0).getRequestId());
 
         assertThrows(UserNotFoundException.class, () -> requestService.getByRequestId(-99L, testRequest.getId()));
         assertThrows(UserNotFoundException.class, () -> requestService.getByRequestId(99L, testRequest.getId()));

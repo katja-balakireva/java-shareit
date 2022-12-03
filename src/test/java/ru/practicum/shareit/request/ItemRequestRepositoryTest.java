@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 public class ItemRequestRepositoryTest {
@@ -43,17 +44,34 @@ public class ItemRequestRepositoryTest {
     @Test
     void testFindAllByUserId() {
         Collection<ItemRequest> result = requestRepository.findAllByUserId(testUser.getId(), REQ);
+        List<ItemRequest> resultList = new ArrayList<>(result);
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, resultList.size());
+        assertEquals(testRequest.getId(), resultList.get(0).getId());
+        assertEquals(testRequest.getDescription(), resultList.get(0).getDescription());
+        assertEquals(testRequest.getUser(), resultList.get(0).getUser());
+        assertEquals(testRequest.getCreated(), resultList.get(0).getCreated());
     }
 
     @Test
     void testFindAllOthersByUserId() {
-        Collection<ItemRequest> result = requestRepository.findAllOthersByUserId(testUser.getId(), REQ);
-        List<ItemRequest> resultList = new ArrayList<>(result);
+        List<ItemRequest> resultList = new ArrayList<>(requestRepository.findAllOthersByUserId(testUser.getId(), REQ));
+        ItemRequest first = resultList.get(0);
+        ItemRequest second = resultList.get(1);
+
         assertNotNull(resultList);
         assertEquals(2, resultList.size());
-        assertEquals(otherUser, resultList.get(0).getUser());
+        assertEquals(otherUser, first.getUser());
+        assertEquals(otherUser, second.getUser());
+
+        assertTrue(otherRequestFirst.getId().equals(first.getId()) || otherRequestFirst.getId().equals(
+                second.getId()));
+        assertTrue(otherRequestFirst.getDescription().equals(first.getDescription()) || otherRequestFirst
+                .getDescription().equals(second.getDescription()));
+        assertTrue(otherRequestFirst.getUser().equals(first.getUser()) || otherRequestFirst.getUser().equals(
+                second.getUser()));
+        assertTrue(otherRequestFirst.getCreated().equals(first.getCreated()) || otherRequestFirst.getCreated()
+                .equals(second.getCreated()));
     }
 
     private User createTestUser() {

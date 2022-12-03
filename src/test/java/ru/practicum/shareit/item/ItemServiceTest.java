@@ -80,6 +80,8 @@ public class ItemServiceTest {
     @Test
     void testAddItem() {
         ItemInfoDto result = itemService.addItem(testUser.getId(), testItemDto);
+        ItemInfoDto.ItemBookingDto resultBooking = new ItemInfoDto.ItemBookingDto(testBooking.getId(),
+                testBooker.getId());
 
         assertNotNull(result);
         assertEquals(testItemInfoDto.getId(), result.getId());
@@ -88,6 +90,8 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getAvailable(), result.getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.getOwner().getId());
         assertEquals(testItemInfoDto.getRequestId(), result.getRequestId());
+        assertEquals(resultBooking, result.getNextBooking());
+        assertNull(result.getLastBooking());
 
         assertThrows(UserNotFoundException.class, () -> itemService.addItem(99L, testItemDto));
     }
@@ -105,6 +109,8 @@ public class ItemServiceTest {
         assertEquals(itemNoRequest.getAvailable(), result.getAvailable());
         assertEquals(itemNoRequest.getOwner().getId(), result.getOwner().getId());
         assertNull(result.getRequestId());
+        assertNull(result.getNextBooking());
+        assertNull(result.getLastBooking());
 
         assertThrows(UserNotFoundException.class, () -> itemService.addItem(99L, testItemDto));
     }
@@ -116,6 +122,8 @@ public class ItemServiceTest {
 
         Item fromStorage = itemRepository.findById(testItem.getId()).get();
         ItemInfoDto result = itemService.updateItem(testUser.getId(), testItem.getId(), itemToUpdate);
+        ItemInfoDto.ItemBookingDto resultBooking = new ItemInfoDto.ItemBookingDto(testBooking.getId(),
+                testBooker.getId());
 
         assertNotNull(result);
         assertEquals(fromStorage.getId(), result.getId());
@@ -123,6 +131,8 @@ public class ItemServiceTest {
         assertEquals(fromStorage.getDescription(), result.getDescription());
         assertEquals(fromStorage.getAvailable(), result.getAvailable());
         assertEquals(fromStorage.getOwner().getId(), result.getOwner().getId());
+        assertEquals(resultBooking, result.getNextBooking());
+        assertNull(result.getLastBooking());
 
         assertThrows(UserNotFoundException.class, () -> itemService.updateItem(99L, testItem.getId(),
                 itemToUpdate));
@@ -173,6 +183,8 @@ public class ItemServiceTest {
     @Test
     void testSearchItem() {
         List<ItemInfoDto> result = itemService.searchItem("TestItem", CustomPageRequest.of(0, 10));
+        ItemInfoDto.ItemBookingDto resultBooking = new ItemInfoDto.ItemBookingDto(testBooking.getId(),
+                testBooker.getId());
 
         assertNotNull(result);
         assertEquals(testItemInfoDto.getId(), result.get(0).getId());
@@ -180,6 +192,8 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.get(0).getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.get(0).getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.get(0).getOwner().getId());
+        assertEquals(resultBooking, result.get(0).getNextBooking());
+        assertNull(result.get(0).getLastBooking());
     }
 
     @Test

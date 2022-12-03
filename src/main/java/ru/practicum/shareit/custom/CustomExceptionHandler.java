@@ -39,7 +39,7 @@ public class CustomExceptionHandler {
         return new ErrorResponse(exception.getMessage());
     }
 
-    @ExceptionHandler
+   /* @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleEmailValidation(EmailValidationException exception) {
         return new ErrorResponse(exception.getMessage());
@@ -49,7 +49,7 @@ public class CustomExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleDuplicateEmail(DuplicateEmailException exception) {
         return new ErrorResponse(exception.getMessage());
-    }
+    } */
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.FORBIDDEN)

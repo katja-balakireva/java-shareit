@@ -13,6 +13,7 @@ import ru.practicum.shareit.custom.CustomBadRequestException;
 import ru.practicum.shareit.custom.CustomPageRequest;
 import ru.practicum.shareit.custom.ItemNotFoundException;
 import ru.practicum.shareit.custom.UserNotFoundException;
+import ru.practicum.shareit.custom.ValidateOwnershipException;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -85,6 +87,24 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.getOwner().getId());
+        assertEquals(testItemInfoDto.getRequestId(), result.getRequestId());
+
+        assertThrows(UserNotFoundException.class, () -> itemService.addItem(99L, testItemDto));
+    }
+
+    @Test
+    void testAddItemNoRequest() {
+        Item itemNoRequest = itemRepository.save(new Item(2L, "TestItem_2", "TestDescription_2",
+                true, testUser, null, null));
+        ItemInfoDto result = itemService.addItem(testUser.getId(), itemMapper.toItemDto(itemNoRequest));
+
+        assertNotNull(result);
+        assertEquals(itemNoRequest.getId(), result.getId());
+        assertEquals(itemNoRequest.getName(), result.getName());
+        assertEquals(itemNoRequest.getDescription(), result.getDescription());
+        assertEquals(itemNoRequest.getAvailable(), result.getAvailable());
+        assertEquals(itemNoRequest.getOwner().getId(), result.getOwner().getId());
+        assertNull(result.getRequestId());
 
         assertThrows(UserNotFoundException.class, () -> itemService.addItem(99L, testItemDto));
     }
@@ -110,6 +130,44 @@ public class ItemServiceTest {
                 itemToUpdate));
         assertThrows(ItemNotFoundException.class, () -> itemService.updateItem(testUser.getId(), 99L,
                 itemToUpdate));
+        assertThrows(ValidateOwnershipException.class, () -> itemService.updateItem(testBooker.getId(),
+                testItem.getId(), itemToUpdate));
+    }
+
+    @Test
+    void testUpdateItemNoName() {
+        ItemDto itemToUpdate = new ItemDto(2L, null, null, "TestDescription_Upd",
+                false);
+
+        ItemInfoDto result = itemService.updateItem(testUser.getId(), testItem.getId(), itemToUpdate);
+
+        assertNotNull(result);
+        assertEquals(testItem.getId(), result.getId());
+        assertEquals(testItem.getName(), result.getName());
+    }
+
+    @Test
+    void testUpdateItemNoDescription() {
+        ItemDto itemToUpdate = new ItemDto(2L, null, "Some_name", null,
+                false);
+
+        ItemInfoDto result = itemService.updateItem(testUser.getId(), testItem.getId(), itemToUpdate);
+
+        assertNotNull(result);
+        assertEquals(testItem.getId(), result.getId());
+        assertEquals(testItem.getDescription(), result.getDescription());
+    }
+
+    @Test
+    void testUpdateItemNoAvailable() {
+        ItemDto itemToUpdate = new ItemDto(2L, null, "Some_name", "TestDescription_Upd",
+                null);
+
+        ItemInfoDto result = itemService.updateItem(testUser.getId(), testItem.getId(), itemToUpdate);
+
+        assertNotNull(result);
+        assertEquals(testItem.getId(), result.getId());
+        assertEquals(testItem.getAvailable(), result.getAvailable());
     }
 
     @Test
@@ -122,6 +180,15 @@ public class ItemServiceTest {
         assertEquals(testItemInfoDto.getDescription(), result.get(0).getDescription());
         assertEquals(testItemInfoDto.getAvailable(), result.get(0).getAvailable());
         assertEquals(testItemInfoDto.getOwner().getId(), result.get(0).getOwner().getId());
+    }
+
+    @Test
+    void testSearchItemEmpty() {
+        String searchText = "";
+        List<ItemInfoDto> result = itemService.searchItem(searchText, CustomPageRequest.of(0, 10));
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -138,7 +205,19 @@ public class ItemServiceTest {
         assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), 99L));
         assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), null));
         assertThrows(ItemNotFoundException.class, () -> itemService.getById(99L, testUser.getId()));
+    }
 
+    @Test
+    void testGetByIdNotOwner() {
+        ItemInfoDto resultItem = itemMapper.toItemInfoDtoNotOwner(testItem);
+        ItemInfoDto result = itemService.getById(resultItem.getId(), testBooker.getId());
+
+        assertNotNull(result);
+        assertEquals(testItemInfoDto.getId(), result.getId());
+        assertEquals(testItemInfoDto.getName(), result.getName());
+        assertEquals(testItemInfoDto.getDescription(), result.getDescription());
+        assertEquals(testItemInfoDto.getAvailable(), result.getAvailable());
+        assertEquals(testItemInfoDto.getOwner().getId(), result.getOwner().getId());
     }
 
     @Test

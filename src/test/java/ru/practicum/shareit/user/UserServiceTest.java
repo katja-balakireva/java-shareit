@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+//import ru.practicum.shareit.custom.DuplicateEmailException;
 import ru.practicum.shareit.custom.UserNotFoundException;
 
 import java.util.Collections;
@@ -48,7 +49,6 @@ public class UserServiceTest {
         assertEquals(userToAdd.getName(), result.getName());
         assertEquals(userToAdd.getEmail(), result.getEmail());
     }
-
 
     @Test
     void testUpdateUser() {

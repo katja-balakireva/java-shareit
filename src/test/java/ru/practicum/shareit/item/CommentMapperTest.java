@@ -19,10 +19,10 @@ public class CommentMapperTest {
     @Autowired
     private CommentMapper commentMapper;
 
-    User testAuthor;
-    Item testItem;
-    Comment testComment;
-    CommentDto testCommentDto;
+    private User testAuthor;
+    private Item testItem;
+    private Comment testComment;
+    private CommentDto testCommentDto;
 
     @BeforeEach
     void setUp() {

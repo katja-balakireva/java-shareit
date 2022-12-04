@@ -138,16 +138,33 @@ public class ItemServiceTest {
     }
 
     @Test
-    void testUpdateItemFailedValidatons() {
+    void testUpdateItemNotFoundUser() {
         ItemDto itemToUpdate = new ItemDto(1L, null, "TestName_Upd", "TestDescription_Upd",
                 false);
-
         assertThrows(UserNotFoundException.class, () -> itemService.updateItem(99L, testItem.getId(),
                 itemToUpdate));
+    }
+
+    @Test
+    void testUpdateItemNullUser() {
+        ItemDto itemToUpdate = new ItemDto(1L, null, "TestName_Upd", "TestDescription_Upd",
+                false);
         assertThrows(UserNotFoundException.class, () -> itemService.updateItem(null, testItem.getId(),
                 itemToUpdate));
+    }
+
+    @Test
+    void testUpdateItemNotFoundItem() {
+        ItemDto itemToUpdate = new ItemDto(1L, null, "TestName_Upd", "TestDescription_Upd",
+                false);
         assertThrows(ItemNotFoundException.class, () -> itemService.updateItem(testUser.getId(), 99L,
                 itemToUpdate));
+    }
+
+    @Test
+    void testUpdateItemWrongOwner() {
+        ItemDto itemToUpdate = new ItemDto(1L, null, "TestName_Upd", "TestDescription_Upd",
+                false);
         assertThrows(ValidateOwnershipException.class, () -> itemService.updateItem(testBooker.getId(),
                 testItem.getId(), itemToUpdate));
     }
@@ -226,9 +243,17 @@ public class ItemServiceTest {
     }
 
     @Test
-    void testGetByIdFailedValidations() {
+    void testGetByIdNotFoundUser() {
         assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), 99L));
+    }
+
+    @Test
+    void testGetByIdNullUser() {
         assertThrows(UserNotFoundException.class, () -> itemService.getById(testItem.getId(), null));
+    }
+
+    @Test
+    void testGetByIdNotFoundItem() {
         assertThrows(ItemNotFoundException.class, () -> itemService.getById(99L, testUser.getId()));
     }
 
@@ -264,11 +289,19 @@ public class ItemServiceTest {
     }
 
     @Test
-    void testAddCommentFailedValidations() {
-        assertThrows(CustomBadRequestException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
-                testUser.getId(), testItem.getId()));
+    void testAddCommentFailedValidation() {
+        assertThrows(CustomBadRequestException.class, () -> itemService.addComment(commentMapper
+                .toCommentDto(testComment), testUser.getId(), testItem.getId()));
+    }
+
+    @Test
+    void testAddCommentNotFoundItem() {
         assertThrows(ItemNotFoundException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
                 testUser.getId(), 99L));
+    }
+
+    @Test
+    void testAddCommentNotFoundUser() {
         assertThrows(UserNotFoundException.class, () -> itemService.addComment(commentMapper.toCommentDto(testComment),
                 99L, testItem.getId()));
     }

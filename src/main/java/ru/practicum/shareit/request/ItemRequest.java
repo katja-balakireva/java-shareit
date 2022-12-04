@@ -2,8 +2,9 @@ package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.Column;
@@ -18,7 +19,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "requests", schema = "public")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

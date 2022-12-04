@@ -2,8 +2,11 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.user.User;
@@ -16,7 +19,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -50,7 +56,10 @@ public class ItemInfoDto {
     }
 
     @AllArgsConstructor
-    @Data
+    @Getter
+    @Setter
+    @ToString
+    @EqualsAndHashCode
     public static class ItemBookingDto {
         Long id;
         Long bookerId;

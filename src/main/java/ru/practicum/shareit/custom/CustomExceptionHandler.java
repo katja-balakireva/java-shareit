@@ -1,4 +1,4 @@
-package ru.practicum.shareit.exceptions;
+package ru.practicum.shareit.custom;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -34,6 +34,12 @@ public class CustomExceptionHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleRequestNotFound(RequestNotFoundException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+   /* @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleEmailValidation(EmailValidationException exception) {
         return new ErrorResponse(exception.getMessage());
@@ -43,7 +49,7 @@ public class CustomExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleDuplicateEmail(DuplicateEmailException exception) {
         return new ErrorResponse(exception.getMessage());
-    }
+    } */
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.FORBIDDEN)

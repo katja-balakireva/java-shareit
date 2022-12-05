@@ -2,13 +2,14 @@ package ru.practicum.shareit.booking;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.BookingNotFoundException;
-import ru.practicum.shareit.exceptions.CustomBadRequestException;
-import ru.practicum.shareit.exceptions.ItemNotFoundException;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
-import ru.practicum.shareit.exceptions.ValidateBookingOwnershipException;
+import ru.practicum.shareit.custom.BookingNotFoundException;
+import ru.practicum.shareit.custom.CustomBadRequestException;
+import ru.practicum.shareit.custom.ItemNotFoundException;
+import ru.practicum.shareit.custom.UserNotFoundException;
+import ru.practicum.shareit.custom.ValidateBookingOwnershipException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
@@ -42,22 +43,22 @@ public class BookingServiceImpl implements BookingService {
         this.bookingMapper = bookingMapper;
     }
 
-    public List<BookingInfoDto> getAllByUserId(Long userId, String state) {
+    public List<BookingInfoDto> getAllByUserId(Long userId, String state, PageRequest pageRequest) {
         validateAndReturnUser(userId);
 
-        Collection<Booking> result = sortByStateAndBookerId(state, userId);
+        Collection<Booking> result = sortByStateAndBookerId(state, userId, pageRequest);
         log.info("Получен список бронирований пользователя {}", userId);
-        return result.stream().map(bookingMapper::toBookingInfoDto)
+        return result.stream().map(BookingMapper::toBookingInfoDto)
                 .sorted(Comparator.comparingLong(BookingInfoDto::getId).reversed())
                 .collect(Collectors.toList());
     }
 
-    public List<BookingInfoDto> getAllByOwnerId(Long ownerId, String state) {
+    public List<BookingInfoDto> getAllByOwnerId(Long ownerId, String state, PageRequest pageRequest) {
         validateItemByOwner(ownerId);
 
-        Collection<Booking> result = sortByStateAndOwnerId(state, ownerId);
+        Collection<Booking> result = sortByStateAndOwnerId(state, ownerId, pageRequest);
         log.info("Получен список бронирований владельца {}", ownerId);
-        return result.stream().map(bookingMapper::toBookingInfoDto)
+        return result.stream().map(BookingMapper::toBookingInfoDto)
                 .sorted(Comparator.comparingLong(BookingInfoDto::getId).reversed())
                 .collect(Collectors.toList());
     }
@@ -71,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingNotFoundException("Бронирование не найдено");
         }
 
-        BookingInfoDto result = bookingMapper.toBookingInfoDto(bookingInDB);
+        BookingInfoDto result = BookingMapper.toBookingInfoDto(bookingInDB);
         log.info("Получено бронирование пользователя с id {}: {}", userId, result);
         return result;
     }
@@ -85,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
         bookingDto.setStatus(State.WAITING);
         Booking booking = bookingMapper.toBooking(bookingDto, userId);
         Booking bookingToAdd = bookingRepository.save(booking);
-        BookingInfoDto result = bookingMapper.toBookingInfoDto(bookingToAdd);
+        BookingInfoDto result = BookingMapper.toBookingInfoDto(bookingToAdd);
         log.info("Пользователь {} добавил новое бронирование: {}", userId, result);
         return result;
     }
@@ -100,40 +101,43 @@ public class BookingServiceImpl implements BookingService {
         checkState(bookingInDB, approved);
 
         Booking bookingToUpdate = bookingRepository.save(bookingInDB);
-        BookingInfoDto result = bookingMapper.toBookingInfoDto(bookingToUpdate);
+        BookingInfoDto result = BookingMapper.toBookingInfoDto(bookingToUpdate);
         log.info("Бронирование c id {} обновлено: {}", bookingId, result);
         return result;
     }
 
     /* STATE METHODS */
 
-    private Collection<Booking> sortByStateAndBookerId(String state, Long bookerId) {
+    private Collection<Booking> sortByStateAndBookerId(String state, Long bookerId, PageRequest pageRequest) {
         switch (state.toUpperCase()) {
             case "CURRENT":
-                return bookingRepository.getAllByBookerId(bookerId, LocalDateTime.now());
+                return bookingRepository.getAllByBookerId(bookerId, LocalDateTime.now(), pageRequest);
             case "PAST":
-                return bookingRepository.findAllByBookerIdAndEndBefore(bookerId, LocalDateTime.now());
+                return bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, LocalDateTime.now(),
+                        pageRequest);
             case "FUTURE":
-                return bookingRepository.findAllByBookerIdAndStartAfter(bookerId, LocalDateTime.now());
+                return bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, LocalDateTime.now(),
+                        pageRequest);
             case "ALL":
-                return bookingRepository.findAllByBookerId(bookerId);
+                return bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId, pageRequest);
             default:
-                return bookingRepository.findAllByBookerIdAndStatus(bookerId, State.from(state));
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, State.from(state),
+                        pageRequest);
         }
     }
 
-    private Collection<Booking> sortByStateAndOwnerId(String state, Long ownerId) {
+    private Collection<Booking> sortByStateAndOwnerId(String state, Long ownerId, PageRequest pageRequest) {
         switch (state.toUpperCase()) {
             case "CURRENT":
-                return bookingRepository.getCurrentBookingsByOwnerId(ownerId, LocalDateTime.now());
+                return bookingRepository.getCurrentBookingsByOwnerId(ownerId, LocalDateTime.now(), pageRequest);
             case "PAST":
-                return bookingRepository.getPastBookingsByOwnerId(ownerId, LocalDateTime.now());
+                return bookingRepository.getPastBookingsByOwnerId(ownerId, LocalDateTime.now(), pageRequest);
             case "FUTURE":
-                return bookingRepository.getFutureBookingsByOwnerId(ownerId, LocalDateTime.now());
+                return bookingRepository.getFutureBookingsByOwnerId(ownerId, LocalDateTime.now(), pageRequest);
             case "ALL":
-                return bookingRepository.findAllByOwnerId(ownerId);
+                return bookingRepository.findAllByOwnerId(ownerId, pageRequest);
             default:
-                return bookingRepository.findAllByOwnerIdAndStatus(ownerId, State.from(state));
+                return bookingRepository.findAllByOwnerIdAndStatus(ownerId, State.from(state), pageRequest);
         }
     }
 

@@ -3,8 +3,8 @@ package ru.practicum.shareit.booking;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.exceptions.ItemNotFoundException;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.custom.ItemNotFoundException;
+import ru.practicum.shareit.custom.UserNotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
@@ -30,6 +30,7 @@ public class BookingMapper {
         User booker = getBooker(bookerId);
 
         return Booking.builder()
+                .id(bookingDto.getId())
                 .start(bookingDto.getStart())
                 .end(bookingDto.getEnd())
                 .item(item)
@@ -38,7 +39,18 @@ public class BookingMapper {
                 .build();
     }
 
-    public BookingInfoDto toBookingInfoDto(Booking booking) {
+    public static BookingDto toBookingDto(Booking booking) {
+        return BookingDto.builder()
+                .id(booking.getId())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .itemId(booking.getItem().getId())
+                .bookerId(booking.getBooker().getId())
+                .status(booking.getStatus())
+                .build();
+    }
+
+    public static BookingInfoDto toBookingInfoDto(Booking booking) {
 
         return BookingInfoDto.builder()
                 .id(booking.getId())

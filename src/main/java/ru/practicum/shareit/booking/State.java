@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking;
 
-import ru.practicum.shareit.exceptions.UnsupportedStateException;
+import ru.practicum.shareit.custom.UnsupportedStateException;
 
 public enum State {
     WAITING,

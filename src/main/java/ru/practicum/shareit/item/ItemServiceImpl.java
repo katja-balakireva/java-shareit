@@ -2,15 +2,18 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.State;
-import ru.practicum.shareit.exceptions.CustomBadRequestException;
-import ru.practicum.shareit.exceptions.ItemNotFoundException;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
-import ru.practicum.shareit.exceptions.ValidateOwnershipException;
+import ru.practicum.shareit.custom.CustomBadRequestException;
+import ru.practicum.shareit.custom.ItemNotFoundException;
+import ru.practicum.shareit.custom.UserNotFoundException;
+import ru.practicum.shareit.custom.ValidateOwnershipException;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -31,6 +34,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
+    private final ItemRequestRepository requestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
@@ -38,19 +42,21 @@ public class ItemServiceImpl implements ItemService {
                            CommentRepository commentRepository,
                            BookingRepository bookingRepository,
                            ItemMapper itemMapper,
-                           CommentMapper commentMapper) {
+                           CommentMapper commentMapper,
+                           ItemRequestRepository requestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.bookingRepository = bookingRepository;
         this.itemMapper = itemMapper;
         this.commentMapper = commentMapper;
+        this.requestRepository = requestRepository;
     }
 
-    public List<ItemInfoDto> getAll(Long userId) {
+    public List<ItemInfoDto> getAll(Long userId, PageRequest pageRequest) {
         validateUser(userId);
         List<ItemInfoDto> result =
-                itemRepository.findByOwnerId(userId).stream()
+                itemRepository.findByOwnerId(userId, pageRequest).stream()
                         .map(itemMapper::toItemInfoDto)
                         .collect(Collectors.toList());
         log.info("Получен список из {} вещей: {}", result.size(), result);
@@ -73,7 +79,13 @@ public class ItemServiceImpl implements ItemService {
 
     public ItemInfoDto addItem(Long userId, ItemDto itemDto) {
         validateUser(userId);
-        Item item = itemMapper.toItem(itemDto, userId);
+        Optional<ItemRequest> itemRequest = Optional.empty();
+        if (itemDto.getRequestId() != null) {
+            itemRequest =
+                    requestRepository.findById(itemDto.getRequestId());
+        }
+
+        Item item = itemMapper.toItem(itemDto, userId, itemRequest);
         Item itemToAdd = itemRepository.save(item);
         ItemInfoDto result = itemMapper.toItemInfoDto(itemToAdd);
         log.info("Пользователь {} добавил новую вещь: {}", userId, result);
@@ -111,13 +123,13 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.delete(item);
     }
 
-    public List<ItemInfoDto> searchItem(String text) {
+    public List<ItemInfoDto> searchItem(String text, PageRequest pageRequest) {
         List<ItemInfoDto> result;
 
         if (text.isBlank() || text.isEmpty()) {
             result = new ArrayList<>();
         } else {
-            result = itemRepository.findByNameContainsOrDescriptionContainsIgnoreCase(text, text).stream()
+            result = itemRepository.findByNameContainsOrDescriptionContainsIgnoreCase(text, text, pageRequest).stream()
                     .filter(Item::getAvailable)
                     .map(itemMapper::toItemInfoDto)
                     .collect(Collectors.toList());

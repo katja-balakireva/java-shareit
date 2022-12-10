@@ -20,6 +20,7 @@ import ru.practicum.shareit.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,6 +59,7 @@ public class ItemServiceImpl implements ItemService {
         List<ItemInfoDto> result =
                 itemRepository.findByOwnerId(userId, pageRequest).stream()
                         .map(itemMapper::toItemInfoDto)
+                        .sorted(Comparator.comparingLong(ItemInfoDto::getId))
                         .collect(Collectors.toList());
         log.info("Получен список из {} вещей: {}", result.size(), result);
         return result;

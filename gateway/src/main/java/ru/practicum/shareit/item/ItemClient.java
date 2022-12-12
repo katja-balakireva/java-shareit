@@ -8,7 +8,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
-import ru.practicum.shareit.custom.PaginationException;
 import ru.practicum.shareit.custom.UserIdValidationException;
 
 import java.util.Map;
@@ -28,7 +27,6 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getAll(Long userId, Integer from, Integer size) {
-        validatePaginationParameters(from);
         Map<String, Object> params = Map.of("from", from, "size", size);
         return get("/?from={from}&size={size}", userId, params);
     }
@@ -52,7 +50,6 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> searchItem(Long userId, String text, Integer from, Integer size) {
-        validatePaginationParameters(from);
         Map<String, Object> params = Map.of("text", text, "from", from, "size", size);
         return get("/search?text={text}&from={from}&size={size}", userId, params);
     }
@@ -66,9 +63,5 @@ public class ItemClient extends BaseClient {
     private void validateUserId(Long userId) {
         if (userId < 0) throw new UserIdValidationException("id пользователя не может быть отрицательным: " + userId);
         if (userId == 0) throw new UserIdValidationException("id пользователя не может быть нулевой: " + userId);
-    }
-
-    private void validatePaginationParameters(Integer param) {
-        if (param < 0) throw new PaginationException("Передан неверный параметр пагинации: " + param);
     }
 }

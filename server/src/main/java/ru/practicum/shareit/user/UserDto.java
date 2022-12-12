@@ -5,14 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.Create;
 import ru.practicum.shareit.Update;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-@Component
 @Getter
 @Setter
 @Builder

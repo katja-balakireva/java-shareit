@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.user.User;
 
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
 @Getter
 @Setter
 @ToString

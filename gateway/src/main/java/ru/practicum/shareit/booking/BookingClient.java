@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.custom.BookingDateException;
-import ru.practicum.shareit.custom.PaginationException;
 import ru.practicum.shareit.custom.UnsupportedStateException;
 
 import java.util.Map;
@@ -34,7 +33,6 @@ public class BookingClient extends BaseClient {
                                                          Integer size) {
 
         validateState(stateParam);
-        validatePaginationParameters(from);
 
         Map<String, Object> params = Map.of("state", stateParam, "from", from, "size", size);
         return get("?state={state}&from={from}&size={size}", userId, params);
@@ -45,7 +43,6 @@ public class BookingClient extends BaseClient {
                                                           Integer from,
                                                           Integer size) {
         validateState(stateParam);
-        validatePaginationParameters(from);
         Map<String, Object> params = Map.of("state", stateParam, "from", from, "size", size);
         return get("/owner?state={state}&from={from}&size={size}", ownerId, params);
 
@@ -71,12 +68,12 @@ public class BookingClient extends BaseClient {
                 "Unknown state: " + stateParam);
     }
 
-    private void validatePaginationParameters(Integer param) {
-        if (param < 0) throw new PaginationException("Передан неверный параметр пагинации: " + param);
-    }
-
     private void validateBookingDate(BookingDto bookingDto) {
-        if (bookingDto.getEnd().isBefore(bookingDto.getStart()))
+        if (bookingDto.getEnd().isBefore(bookingDto.getStart())) {
             throw new BookingDateException("Дата конца бронирования не может быть после даты начала");
+        }
+        if (bookingDto.getEnd().isEqual(bookingDto.getStart())) {
+            throw new BookingDateException("Дата конца бронирования не может равна дате начала");
+        }
     }
 }

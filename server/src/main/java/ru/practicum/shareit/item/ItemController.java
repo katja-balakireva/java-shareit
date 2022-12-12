@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.Create;
-import ru.practicum.shareit.Update;
 import ru.practicum.shareit.custom.CustomPageRequest;
 
 import javax.validation.constraints.Positive;
@@ -24,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/items")
-@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -53,15 +49,13 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemInfoDto addItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                               @Validated({Create.class}) @RequestBody ItemDto itemDto) {
+    public ItemInfoDto addItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId, @RequestBody ItemDto itemDto) {
         return itemService.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemInfoDto updateItem(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                                  @PathVariable Long itemId,
-                                  @Validated({Update.class}) @RequestBody ItemDto itemDto) {
+                                  @PathVariable Long itemId, @RequestBody ItemDto itemDto) {
         return itemService.updateItem(userId, itemId, itemDto);
     }
 
@@ -85,8 +79,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                                 @Validated({Create.class}) @RequestBody CommentDto commentDto,
-                                 @PathVariable Long itemId) {
+                                 @RequestBody CommentDto commentDto, @PathVariable Long itemId) {
         return itemService.addComment(commentDto, userId, itemId);
     }
 }

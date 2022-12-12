@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.Create;
 import ru.practicum.shareit.custom.CustomPageRequest;
 
 import javax.validation.constraints.Positive;
@@ -61,7 +60,7 @@ public class ItemRequestController {
 
     @PostMapping
     public ItemRequestInfoDto addItemRequest(@RequestHeader(name = "X-Sharer-User-Id") Long userId,
-                                             @Validated({Create.class}) @RequestBody ItemRequestDto itemRequestDto) {
+                                             @RequestBody ItemRequestDto itemRequestDto) {
         return requestService.addItemRequest(userId, itemRequestDto);
     }
 }

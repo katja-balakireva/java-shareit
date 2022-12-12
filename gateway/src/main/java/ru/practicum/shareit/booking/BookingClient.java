@@ -69,11 +69,8 @@ public class BookingClient extends BaseClient {
     }
 
     private void validateBookingDate(BookingDto bookingDto) {
-        if (bookingDto.getEnd().isBefore(bookingDto.getStart())) {
-            throw new BookingDateException("Дата конца бронирования не может быть после даты начала");
-        }
-        if (bookingDto.getEnd().isEqual(bookingDto.getStart())) {
-            throw new BookingDateException("Дата конца бронирования не может равна дате начала");
+        if (!bookingDto.getStart().isBefore(bookingDto.getEnd())) {
+            throw new BookingDateException("Дата конца бронирования не может быть после или равна дате начала");
         }
     }
 }
